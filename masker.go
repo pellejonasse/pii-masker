@@ -3,6 +3,7 @@ package piimasker
 import (
 	"math/rand/v2"
 	"reflect"
+	"sync"
 )
 
 const (
@@ -15,7 +16,8 @@ type PiiMasker interface {
 
 // Don't necessarily need a struct and it might be more convenient if it isn't a struct
 type piiMasker struct {
-	config MaskerConfig
+	config    MaskerConfig
+	typeCache sync.Map // map[reflect.Type][]PiiMode, populated on first encounter of each struct type
 }
 
 func NewMasker(config MaskerConfig) PiiMasker {
@@ -56,7 +58,6 @@ func (m *piiMasker) recursiveStructTraverser(copy, original reflect.Value, piiMo
 		case k == reflect.Pointer:
 			pointerValue := original.Elem()
 			if !pointerValue.IsValid() {
-				// TODO: validate this
 				return
 			}
 			copy.Set(reflect.New(pointerValue.Type()))
@@ -82,14 +83,14 @@ func (m *piiMasker) recursiveStructTraverser(copy, original reflect.Value, piiMo
 			copy.Set(copyValue)
 
 		case k == reflect.Struct:
+			fieldTags := m.structFieldTags(original.Type())
 			for i := range original.NumField() {
-				fieldTag := determinePiiMode(original.Type().Field(i).Tag.Get(piiTagField))
-				if fieldTag == PiiModeNone {
+				if fieldTags[i] == PiiModeNone {
 					// no tag on this field — propagate parent mode
 					m.recursiveStructTraverser(copy.Field(i), original.Field(i), piiMode)
 				} else {
 					// explicit tag — field tag wins
-					m.recursiveStructTraverser(copy.Field(i), original.Field(i), fieldTag)
+					m.recursiveStructTraverser(copy.Field(i), original.Field(i), fieldTags[i])
 				}
 			}
 		}
@@ -110,6 +111,18 @@ func isUnsignedInteger(k reflect.Kind) bool {
 
 func determinePiiMode(tag string) PiiMode {
 	return PiiMode(tag)
+}
+
+func (m *piiMasker) structFieldTags(t reflect.Type) []PiiMode {
+	if cached, ok := m.typeCache.Load(t); ok {
+		return cached.([]PiiMode)
+	}
+	tags := make([]PiiMode, t.NumField())
+	for i := range t.NumField() {
+		tags[i] = determinePiiMode(t.Field(i).Tag.Get(piiTagField))
+	}
+	actual, _ := m.typeCache.LoadOrStore(t, tags)
+	return actual.([]PiiMode)
 }
 
 func (m *piiMasker) maskString(s string) string {

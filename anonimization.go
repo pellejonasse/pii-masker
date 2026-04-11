@@ -1,12 +1,14 @@
 package piimasker
 
 import (
-	"strconv"
 	"fmt"
-	"math/rand/v2"	
+	"math/rand/v2"
+	"strconv"
 )
 
-// not sure about this, but it might be nice to actually preserve the size of numbers
+// Not sure about the anonimize since some basic testing shows it's around 3 times slower than masking
+
+// I somewhat like this idea but it is just way slower so it should be removed
 func preserveNumberSize[T Number](v T) T {
 	s := fmt.Sprintf("%v", v)
 	b := []byte(s)
@@ -19,7 +21,6 @@ func preserveNumberSize[T Number](v T) T {
 	fmt.Sscan(string(b), &result)
 	return result
 }
-
 
 func anonymizeString(s string) string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
