@@ -7,9 +7,9 @@ import (
 )
 
 // Not sure about the anonimize since some basic testing shows it's around 3 times slower than masking
-
 // I somewhat like this idea but it is just way slower so it should be removed
-func preserveNumberSize[T Number](v T) T {
+// @TODO: figure out if I want to keep something in this vain, its just way slower but might make the code a bit more readable
+func preserveNumberSize[T number](v T) T {
 	s := fmt.Sprintf("%v", v)
 	b := []byte(s)
 	for i, c := range b {

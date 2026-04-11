@@ -369,10 +369,10 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 	result := m.Mask(newPersonFixture()).(Person)
 
 	t.Run("top_level", func(t *testing.T) {
-		if result.FirstName != "" {
+		if !validateStringMask(result.FirstName, fixtureFirstName, 100) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if result.LastName != "" {
+		if !validateStringMask(result.LastName, fixtureLastName, 100) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -385,29 +385,29 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if c.Email != "" {
+		if !validateStringMask(c.Email, fixtureEmail, 100) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if c.Phone != "" {
+		if !validateStringMask(c.Phone, fixturePhone, 100) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if c.AltEmail != "" {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, 100) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if a.Street != "" {
+		if !validateStringMask(a.Street, fixtureStreet, 100) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if a.City != "" {
+		if !validateStringMask(a.City, fixtureCity, 100) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if a.Country != "" {
+		if !validateStringMask(a.Country, fixtureCountry, 100) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if a.ZipCode != "" {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, 100) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -430,55 +430,55 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if pm.CardNumber != "" {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, 100) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if pm.CVV != "" {
+		if !validateStringMask(pm.CVV, fixtureCVV, 100) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if pm.Expiry != "" {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, 100) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if pm.HolderName != "" {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, 100) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if ba.Street != "" {
+		if !validateStringMask(ba.Street, fixtureStreet, 100) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if ba.City != "" {
+		if !validateStringMask(ba.City, fixtureCity, 100) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if ba.PostCode != "" {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, 100) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if ba.Country != "" {
+		if !validateStringMask(ba.Country, fixtureCountry, 100) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if o.OrderID != "" {
+		if !validateStringMask(o.OrderID, fixtureOrderID, 100) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if o.Currency != "" {
+		if !validateStringMask(o.Currency, fixtureCurrency, 100) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if o.Notes != "" {
+		if !validateStringMask(o.Notes, fixtureNotes, 100) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if item.ProductID != "" {
+		if !validateStringMask(item.ProductID, fixtureProductID, 100) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if item.Name != "" {
+		if !validateStringMask(item.Name, fixtureItemName, 100) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -491,16 +491,16 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if d.DeviceID != "" {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, 100) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if d.UserAgent != "" {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, 100) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if d.IPAddress != "" {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, 100) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if d.ScreenSize != "" {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, 100) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -798,10 +798,10 @@ func TestMask_Integration_NoTag(t *testing.T) {
 	result := m.Mask(newPersonNoTagFixture()).(PersonNoTag)
 
 	t.Run("top_level", func(t *testing.T) {
-		if result.FirstName != "" {
+		if !validateStringMask(result.FirstName, fixtureFirstName, 100) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if result.LastName != "" {
+		if !validateStringMask(result.LastName, fixtureLastName, 100) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -814,29 +814,29 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if c.Email != "" {
+		if !validateStringMask(c.Email, fixtureEmail, 100) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if c.Phone != "" {
+		if !validateStringMask(c.Phone, fixturePhone, 100) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if c.AltEmail != "" {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, 100) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if a.Street != "" {
+		if !validateStringMask(a.Street, fixtureStreet, 100) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if a.City != "" {
+		if !validateStringMask(a.City, fixtureCity, 100) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if a.Country != "" {
+		if !validateStringMask(a.Country, fixtureCountry, 100) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if a.ZipCode != "" {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, 100) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -859,55 +859,55 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if pm.CardNumber != "" {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, 100) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if pm.CVV != "" {
+		if !validateStringMask(pm.CVV, fixtureCVV, 100) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if pm.Expiry != "" {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, 100) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if pm.HolderName != "" {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, 100) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if ba.Street != "" {
+		if !validateStringMask(ba.Street, fixtureStreet, 100) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if ba.City != "" {
+		if !validateStringMask(ba.City, fixtureCity, 100) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if ba.PostCode != "" {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, 100) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if ba.Country != "" {
+		if !validateStringMask(ba.Country, fixtureCountry, 100) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if o.OrderID != "" {
+		if !validateStringMask(o.OrderID, fixtureOrderID, 100) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if o.Currency != "" {
+		if !validateStringMask(o.Currency, fixtureCurrency, 100) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if o.Notes != "" {
+		if !validateStringMask(o.Notes, fixtureNotes, 100) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if item.ProductID != "" {
+		if !validateStringMask(item.ProductID, fixtureProductID, 100) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if item.Name != "" {
+		if !validateStringMask(item.Name, fixtureItemName, 100) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -920,16 +920,16 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if d.DeviceID != "" {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, 100) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if d.UserAgent != "" {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, 100) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if d.IPAddress != "" {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, 100) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if d.ScreenSize != "" {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, 100) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -941,8 +941,8 @@ func TestMask_PtrChain(t *testing.T) {
 	result := masker.Mask(fixture).(PtrMask)
 
 	t.Run("mask_level", func(t *testing.T) {
-		if *result.Str != "" {
-			t.Errorf("Str: want %q, got %q", "", *result.Str)
+		if !validateStringMask(*result.Str, fixturePtrStr, 100) {
+			t.Errorf("Str: expected masked, got %q", *result.Str)
 		}
 		if *result.Int != 0 {
 			t.Errorf("Int: want 0, got %d", *result.Int)
@@ -957,18 +957,18 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *result.Bool)
 		}
 		for i, s := range result.Slice {
-			if s != "" {
-				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			if !validateStringMask(s, fixturePtrStr, 100) {
+				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := result.MapVal["key"].Value; v != "" {
-			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		if v := result.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*result.PMapVal)["key"].Value; v != "" {
-			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		if v := (*result.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := result.MapPtr["key"].Value; v != "" {
-			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		if v := result.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
 
@@ -1037,8 +1037,8 @@ func TestMask_PtrChain(t *testing.T) {
 
 	t.Run("notag_level", func(t *testing.T) {
 		notag := result.Next.Next.Next
-		if *notag.Str != "" {
-			t.Errorf("Str: want %q, got %q", "", *notag.Str)
+		if !validateStringMask(*notag.Str, fixturePtrStr, 100) {
+			t.Errorf("Str: expected masked, got %q", *notag.Str)
 		}
 		if *notag.Int != 0 {
 			t.Errorf("Int: want 0, got %d", *notag.Int)
@@ -1053,18 +1053,18 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *notag.Bool)
 		}
 		for i, s := range notag.Slice {
-			if s != "" {
-				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			if !validateStringMask(s, fixturePtrStr, 100) {
+				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := notag.MapVal["key"].Value; v != "" {
-			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		if v := notag.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*notag.PMapVal)["key"].Value; v != "" {
-			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		if v := (*notag.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := notag.MapPtr["key"].Value; v != "" {
-			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		if v := notag.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, 100) {
+			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
 }

@@ -12,6 +12,24 @@ func newTestMasker(tb testing.TB) piimasker.PiiMasker {
 	return piimasker.NewMasker(piimasker.MaskerConfig{})
 }
 
+// validateStringMask reports whether result is all '*' characters with the same length as original
+// (capped at maxLen if provided, otherwise just checks length equality).
+func validateStringMask(result, original string, maxLen ...int) bool {
+	cap := len(original)
+	if len(maxLen) > 0 && maxLen[0] < cap {
+		cap = maxLen[0]
+	}
+	if len(result) != cap {
+		return false
+	}
+	for _, c := range result {
+		if c != '*' {
+			return false
+		}
+	}
+	return true
+}
+
 // newBenchMasker creates a Masker with default config for use in benchmarks.
 func newBenchMasker(b *testing.B) piimasker.PiiMasker {
 	b.Helper()

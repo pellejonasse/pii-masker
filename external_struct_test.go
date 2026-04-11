@@ -52,37 +52,37 @@ func TestMask_ExternalStruct_Propagation(t *testing.T) {
 	result := masker.Mask(fixture).(CloudWatchWrapper)
 
 	t.Run("userid_masked", func(t *testing.T) {
-		if result.UserID != "" {
-			t.Errorf("UserID: want %q, got %q", "", result.UserID)
+		if !validateStringMask(result.UserID, fixture.UserID, 100) {
+			t.Errorf("UserID: expected masked, got %q", result.UserID)
 		}
 	})
 
 	t.Run("external_strings_masked", func(t *testing.T) {
 		e := result.Event
-		if e.Version != "" {
-			t.Errorf("Version: want %q, got %q", "", e.Version)
+		if !validateStringMask(e.Version, fixture.Event.Version, 100) {
+			t.Errorf("Version: expected masked, got %q", e.Version)
 		}
-		if e.ID != "" {
-			t.Errorf("ID: want %q, got %q", "", e.ID)
+		if !validateStringMask(e.ID, fixture.Event.ID, 100) {
+			t.Errorf("ID: expected masked, got %q", e.ID)
 		}
-		if e.DetailType != "" {
-			t.Errorf("DetailType: want %q, got %q", "", e.DetailType)
+		if !validateStringMask(e.DetailType, fixture.Event.DetailType, 100) {
+			t.Errorf("DetailType: expected masked, got %q", e.DetailType)
 		}
-		if e.Source != "" {
-			t.Errorf("Source: want %q, got %q", "", e.Source)
+		if !validateStringMask(e.Source, fixture.Event.Source, 100) {
+			t.Errorf("Source: expected masked, got %q", e.Source)
 		}
-		if e.AccountID != "" {
-			t.Errorf("AccountID: want %q, got %q", "", e.AccountID)
+		if !validateStringMask(e.AccountID, fixture.Event.AccountID, 100) {
+			t.Errorf("AccountID: expected masked, got %q", e.AccountID)
 		}
-		if e.Region != "" {
-			t.Errorf("Region: want %q, got %q", "", e.Region)
+		if !validateStringMask(e.Region, fixture.Event.Region, 100) {
+			t.Errorf("Region: expected masked, got %q", e.Region)
 		}
 	})
 
 	t.Run("external_slice_masked", func(t *testing.T) {
 		for i, r := range result.Event.Resources {
-			if r != "" {
-				t.Errorf("Resources[%d]: want %q, got %q", i, "", r)
+			if !validateStringMask(r, fixture.Event.Resources[i], 100) {
+				t.Errorf("Resources[%d]: expected masked, got %q", i, r)
 			}
 		}
 	})
@@ -188,37 +188,37 @@ func TestMask_ExternalStruct_NoTag(t *testing.T) {
 	result := masker.Mask(input).(CloudWatchWrapperNoTag)
 
 	t.Run("userid_masked", func(t *testing.T) {
-		if result.UserID != "" {
-			t.Errorf("UserID: want %q, got %q", "", result.UserID)
+		if !validateStringMask(result.UserID, fixture.UserID, 100) {
+			t.Errorf("UserID: expected masked, got %q", result.UserID)
 		}
 	})
 
 	t.Run("external_strings_masked", func(t *testing.T) {
 		e := result.Event
-		if e.Version != "" {
-			t.Errorf("Version: want %q, got %q", "", e.Version)
+		if !validateStringMask(e.Version, fixture.Event.Version, 100) {
+			t.Errorf("Version: expected masked, got %q", e.Version)
 		}
-		if e.ID != "" {
-			t.Errorf("ID: want %q, got %q", "", e.ID)
+		if !validateStringMask(e.ID, fixture.Event.ID, 100) {
+			t.Errorf("ID: expected masked, got %q", e.ID)
 		}
-		if e.DetailType != "" {
-			t.Errorf("DetailType: want %q, got %q", "", e.DetailType)
+		if !validateStringMask(e.DetailType, fixture.Event.DetailType, 100) {
+			t.Errorf("DetailType: expected masked, got %q", e.DetailType)
 		}
-		if e.Source != "" {
-			t.Errorf("Source: want %q, got %q", "", e.Source)
+		if !validateStringMask(e.Source, fixture.Event.Source, 100) {
+			t.Errorf("Source: expected masked, got %q", e.Source)
 		}
-		if e.AccountID != "" {
-			t.Errorf("AccountID: want %q, got %q", "", e.AccountID)
+		if !validateStringMask(e.AccountID, fixture.Event.AccountID, 100) {
+			t.Errorf("AccountID: expected masked, got %q", e.AccountID)
 		}
-		if e.Region != "" {
-			t.Errorf("Region: want %q, got %q", "", e.Region)
+		if !validateStringMask(e.Region, fixture.Event.Region, 100) {
+			t.Errorf("Region: expected masked, got %q", e.Region)
 		}
 	})
 
 	t.Run("external_slice_masked", func(t *testing.T) {
 		for i, r := range result.Event.Resources {
-			if r != "" {
-				t.Errorf("Resources[%d]: want %q, got %q", i, "", r)
+			if !validateStringMask(r, fixture.Event.Resources[i], 100) {
+				t.Errorf("Resources[%d]: expected masked, got %q", i, r)
 			}
 		}
 	})

@@ -30,14 +30,14 @@ func TestTypeCache_Contents(t *testing.T) {
 	m.Mask(cacheStructB{Token: "tok", Balance: 100.0, Active: true})
 	m.Mask(cacheStructC{DeviceID: "dev", IP: "1.2.3.4", Score: 9.5})
 
-	snapshot := map[string]map[string]PiiMode{}
+	snapshot := map[string]map[string]piiMode{}
 	m.typeCache.Range(func(key, value any) bool {
 		rt := key.(reflect.Type)
-		tags := value.([]PiiMode)
-		fields := map[string]PiiMode{}
+		tags := value.([]piiMode)
+		fields := map[string]piiMode{}
 		for i, tag := range tags {
 			mode := tag
-			if mode == PiiModeNone {
+			if mode == piiModeNone {
 				mode = "(none)"
 			}
 			fields[rt.Field(i).Name] = mode
