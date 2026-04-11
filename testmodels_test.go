@@ -1,7 +1,5 @@
 package piimasker_test
 
-// -- Level 3 (deepest) --
-
 type GeoCoordinates struct {
 	Latitude  float64 `Pii:"mask"`
 	Longitude float64 `Pii:"mask"`
@@ -15,8 +13,6 @@ type CardBillingAddress struct {
 	PostCode string `Pii:"mask"`
 	Country  string `Pii:"mask"`
 }
-
-// -- Level 2 --
 
 type Address struct {
 	Street      string `Pii:"mask"`
@@ -49,8 +45,6 @@ type DeviceInfo struct {
 	ScreenSize string `Pii:"mask"`
 }
 
-// -- Level 1 --
-
 type ContactInfo struct {
 	Email    string `Pii:"mask"`
 	Phone    string `Pii:"mask"`
@@ -66,8 +60,6 @@ type Order struct {
 	Items    []OrderItem
 }
 
-// -- Level 0 (top-level) --
-
 type Person struct {
 	FirstName      string `Pii:"mask"`
 	LastName       string `Pii:"mask"`
@@ -78,8 +70,6 @@ type Person struct {
 	Devices        map[string]DeviceInfo
 	IsActive       bool `Pii:"mask"`
 }
-
-// -- Show variants --
 
 type GeoCoordinatesShow struct {
 	Latitude  float64 `Pii:"show"`
@@ -152,8 +142,6 @@ type PersonShow struct {
 	IsActive       bool `Pii:"show"`
 }
 
-// -- Anonymize variants --
-
 type GeoCoordinatesAnonymize struct {
 	Latitude  float64 `Pii:"anonymize"`
 	Longitude float64 `Pii:"anonymize"`
@@ -225,8 +213,6 @@ type PersonAnonymize struct {
 	IsActive       bool `Pii:"anonymize"`
 }
 
-// -- No-tag variants (default/inherit behaviour) --
-
 type GeoCoordinatesNoTag struct {
 	Latitude  float64
 	Longitude float64
@@ -296,4 +282,61 @@ type PersonNoTag struct {
 	Orders         []OrderNoTag
 	Devices        map[string]DeviceInfoNoTag
 	IsActive       bool
+}
+
+// Deep nested pointer chain
+
+type PtrMapValue struct {
+	Value string
+}
+
+type PtrNoTag struct {
+	Str     *string
+	Int     *int
+	Uint    *uint
+	Float   *float64
+	Bool    *bool
+	Slice   []string
+	MapVal  map[string]PtrMapValue
+	PMapVal *map[string]PtrMapValue
+	MapPtr  map[string]*PtrMapValue
+}
+
+type PtrAnonymize struct {
+	Str     *string                 `Pii:"anonymize"`
+	Int     *int                    `Pii:"anonymize"`
+	Uint    *uint                   `Pii:"anonymize"`
+	Float   *float64                `Pii:"anonymize"`
+	Bool    *bool                   `Pii:"anonymize"`
+	Slice   []string                `Pii:"anonymize"`
+	MapVal  map[string]PtrMapValue  `Pii:"anonymize"`
+	PMapVal *map[string]PtrMapValue `Pii:"anonymize"`
+	MapPtr  map[string]*PtrMapValue `Pii:"anonymize"`
+	Next    *PtrNoTag
+}
+
+type PtrShow struct {
+	Str     *string                 `Pii:"show"`
+	Int     *int                    `Pii:"show"`
+	Uint    *uint                   `Pii:"show"`
+	Float   *float64                `Pii:"show"`
+	Bool    *bool                   `Pii:"show"`
+	Slice   []string                `Pii:"show"`
+	MapVal  map[string]PtrMapValue  `Pii:"show"`
+	PMapVal *map[string]PtrMapValue `Pii:"show"`
+	MapPtr  map[string]*PtrMapValue `Pii:"show"`
+	Next    *PtrAnonymize
+}
+
+type PtrMask struct {
+	Str     *string                 `Pii:"mask"`
+	Int     *int                    `Pii:"mask"`
+	Uint    *uint                   `Pii:"mask"`
+	Float   *float64                `Pii:"mask"`
+	Bool    *bool                   `Pii:"mask"`
+	Slice   []string                `Pii:"mask"`
+	MapVal  map[string]PtrMapValue  `Pii:"mask"`
+	PMapVal *map[string]PtrMapValue `Pii:"mask"`
+	MapPtr  map[string]*PtrMapValue `Pii:"mask"`
+	Next    *PtrShow
 }
