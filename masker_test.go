@@ -1,367 +1,413 @@
 package piimasker_test
 
 import (
+	"fmt"
+	"piimasker"
 	"testing"
 )
 
 func TestMask_DefaultBehaviour(t *testing.T) {
-	masker := newTestMasker(t)
+	configs := []piimasker.MaskerConfig{
+		{MaxPiiStringLength: 5},
+		{MaxPiiStringLength: 10},
+		{MaxPiiStringLength: 20},
+		{MaxPiiStringLength: 100},
+	}
+	for _, cfg := range configs {
+		cfg := cfg
+		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+			t.Parallel()
+			masker := newTestMasker(t, cfg)
 
-	t.Run("string", func(t *testing.T) {
-		type input struct{ Value string }
-		original := input{Value: "John Smith"}
-		result := masker.Mask(original).(input)
-		if result.Value != "" && result.Value == original.Value {
-			t.Errorf("expected Value to be masked, got %q", result.Value)
-		}
-	})
+			t.Run("string", func(t *testing.T) {
+				type input struct{ Value string }
+				original := input{Value: "John Smith"}
+				result := masker.Mask(original).(input)
+				if result.Value != "" && result.Value == original.Value {
+					t.Errorf("expected Value to be masked, got %q", result.Value)
+				}
+			})
 
-	t.Run("int", func(t *testing.T) {
-		type input struct{ Value int }
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %d", result.Value)
-		}
-	})
+			t.Run("int", func(t *testing.T) {
+				type input struct{ Value int }
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %d", result.Value)
+				}
+			})
 
-	t.Run("uint", func(t *testing.T) {
-		type input struct{ Value uint }
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %d", result.Value)
-		}
-	})
+			t.Run("uint", func(t *testing.T) {
+				type input struct{ Value uint }
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %d", result.Value)
+				}
+			})
 
-	t.Run("float", func(t *testing.T) {
-		type input struct{ Value float64 }
-		original := input{Value: 3.14}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %f", result.Value)
-		}
-	})
+			t.Run("float", func(t *testing.T) {
+				type input struct{ Value float64 }
+				original := input{Value: 3.14}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %f", result.Value)
+				}
+			})
 
-	t.Run("bool", func(t *testing.T) {
-		type input struct{ Value bool }
-		original := input{Value: true}
-		result := masker.Mask(original).(input)
-		if result.Value != false {
-			t.Errorf("expected Value to be masked to false, got %v", result.Value)
-		}
-	})
+			t.Run("bool", func(t *testing.T) {
+				type input struct{ Value bool }
+				original := input{Value: true}
+				result := masker.Mask(original).(input)
+				if result.Value != false {
+					t.Errorf("expected Value to be masked to false, got %v", result.Value)
+				}
+			})
 
-	t.Run("pointer", func(t *testing.T) {
-		type input struct{ Value *string }
-		s := "secret"
-		original := input{Value: &s}
-		result := masker.Mask(original).(input)
-		if result.Value == nil {
-			t.Fatal("expected pointer to be non-nil")
-		}
-		if *result.Value == *original.Value {
-			t.Errorf("expected pointed value to be masked, got %q", *result.Value)
-		}
-	})
+			t.Run("pointer", func(t *testing.T) {
+				type input struct{ Value *string }
+				s := "secret"
+				original := input{Value: &s}
+				result := masker.Mask(original).(input)
+				if result.Value == nil {
+					t.Fatal("expected pointer to be non-nil")
+				}
+				if *result.Value == *original.Value {
+					t.Errorf("expected pointed value to be masked, got %q", *result.Value)
+				}
+			})
 
-	t.Run("slice", func(t *testing.T) {
-		type input struct{ Value []string }
-		original := input{Value: []string{"a", "b"}}
-		result := masker.Mask(original).(input)
-		if len(result.Value) != len(original.Value) {
-			t.Errorf("expected slice length %d, got %d", len(original.Value), len(result.Value))
-		}
-	})
+			t.Run("slice", func(t *testing.T) {
+				type input struct{ Value []string }
+				original := input{Value: []string{"a", "b"}}
+				result := masker.Mask(original).(input)
+				if len(result.Value) != len(original.Value) {
+					t.Errorf("expected slice length %d, got %d", len(original.Value), len(result.Value))
+				}
+			})
 
-	t.Run("map", func(t *testing.T) {
-		type input struct{ Value map[string]string }
-		original := input{Value: map[string]string{"key": "value"}}
-		result := masker.Mask(original).(input)
-		if len(result.Value) != len(original.Value) {
-			t.Errorf("expected map length %d, got %d", len(original.Value), len(result.Value))
-		}
-	})
+			t.Run("map", func(t *testing.T) {
+				type input struct{ Value map[string]string }
+				original := input{Value: map[string]string{"key": "value"}}
+				result := masker.Mask(original).(input)
+				if len(result.Value) != len(original.Value) {
+					t.Errorf("expected map length %d, got %d", len(original.Value), len(result.Value))
+				}
+			})
 
-	t.Run("nested", func(t *testing.T) {
-		type inner struct{ Value string }
-		type input struct{ Inner inner }
-		original := input{Inner: inner{Value: "secret"}}
-		result := masker.Mask(original).(input)
-		if result.Inner.Value == original.Inner.Value {
-			t.Errorf("expected nested Value to be masked, got %q", result.Inner.Value)
-		}
-	})
+			t.Run("nested", func(t *testing.T) {
+				type inner struct{ Value string }
+				type input struct{ Inner inner }
+				original := input{Inner: inner{Value: "secret"}}
+				result := masker.Mask(original).(input)
+				if result.Inner.Value == original.Inner.Value {
+					t.Errorf("expected nested Value to be masked, got %q", result.Inner.Value)
+				}
+			})
+		})
+	}
 }
 
 func TestMask_MaskTag(t *testing.T) {
-	masker := newTestMasker(t)
+	configs := []piimasker.MaskerConfig{
+		{MaxPiiStringLength: 5},
+		{MaxPiiStringLength: 10},
+		{MaxPiiStringLength: 20},
+		{MaxPiiStringLength: 100},
+	}
+	for _, cfg := range configs {
+		cfg := cfg
+		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+			t.Parallel()
+			masker := newTestMasker(t, cfg)
 
-	t.Run("string", func(t *testing.T) {
-		type input struct {
-			Value string `Pii:"mask"`
-		}
-		original := input{Value: "John Smith"}
-		result := masker.Mask(original).(input)
-		if result.Value == original.Value {
-			t.Errorf("expected Value to be masked, got %q", result.Value)
-		}
-	})
+			t.Run("string", func(t *testing.T) {
+				type input struct {
+					Value string `Pii:"mask"`
+				}
+				original := input{Value: "John Smith"}
+				result := masker.Mask(original).(input)
+				if result.Value == original.Value {
+					t.Errorf("expected Value to be masked, got %q", result.Value)
+				}
+			})
 
-	t.Run("int", func(t *testing.T) {
-		type input struct {
-			Value int `Pii:"mask"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %d", result.Value)
-		}
-	})
+			t.Run("int", func(t *testing.T) {
+				type input struct {
+					Value int `Pii:"mask"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %d", result.Value)
+				}
+			})
 
-	t.Run("uint", func(t *testing.T) {
-		type input struct {
-			Value uint `Pii:"mask"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %d", result.Value)
-		}
-	})
+			t.Run("uint", func(t *testing.T) {
+				type input struct {
+					Value uint `Pii:"mask"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %d", result.Value)
+				}
+			})
 
-	t.Run("float", func(t *testing.T) {
-		type input struct {
-			Value float64 `Pii:"mask"`
-		}
-		original := input{Value: 3.14}
-		result := masker.Mask(original).(input)
-		if result.Value != 0 {
-			t.Errorf("expected Value to be masked to 0, got %f", result.Value)
-		}
-	})
+			t.Run("float", func(t *testing.T) {
+				type input struct {
+					Value float64 `Pii:"mask"`
+				}
+				original := input{Value: 3.14}
+				result := masker.Mask(original).(input)
+				if result.Value != 0 {
+					t.Errorf("expected Value to be masked to 0, got %f", result.Value)
+				}
+			})
 
-	t.Run("bool", func(t *testing.T) {
-		type input struct {
-			Value bool `Pii:"mask"`
-		}
-		original := input{Value: true}
-		result := masker.Mask(original).(input)
-		if result.Value != false {
-			t.Errorf("expected Value to be masked to false, got %v", result.Value)
-		}
-	})
+			t.Run("bool", func(t *testing.T) {
+				type input struct {
+					Value bool `Pii:"mask"`
+				}
+				original := input{Value: true}
+				result := masker.Mask(original).(input)
+				if result.Value != false {
+					t.Errorf("expected Value to be masked to false, got %v", result.Value)
+				}
+			})
 
-	t.Run("pointer", func(t *testing.T) {
-		type input struct {
-			Value *string `Pii:"mask"`
-		}
-		s := "secret"
-		original := input{Value: &s}
-		result := masker.Mask(original).(input)
-		if result.Value == nil {
-			t.Fatal("expected pointer to be non-nil")
-		}
-		if *result.Value == *original.Value {
-			t.Errorf("expected pointed value to be masked, got %q", *result.Value)
-		}
-	})
+			t.Run("pointer", func(t *testing.T) {
+				type input struct {
+					Value *string `Pii:"mask"`
+				}
+				s := "secret"
+				original := input{Value: &s}
+				result := masker.Mask(original).(input)
+				if result.Value == nil {
+					t.Fatal("expected pointer to be non-nil")
+				}
+				if *result.Value == *original.Value {
+					t.Errorf("expected pointed value to be masked, got %q", *result.Value)
+				}
+			})
 
-	t.Run("nested", func(t *testing.T) {
-		type inner struct {
-			Value string `Pii:"mask"`
-		}
-		type input struct{ Inner inner }
-		original := input{Inner: inner{Value: "secret"}}
-		result := masker.Mask(original).(input)
-		if result.Inner.Value == original.Inner.Value {
-			t.Errorf("expected nested Value to be masked, got %q", result.Inner.Value)
-		}
-	})
+			t.Run("nested", func(t *testing.T) {
+				type inner struct {
+					Value string `Pii:"mask"`
+				}
+				type input struct{ Inner inner }
+				original := input{Inner: inner{Value: "secret"}}
+				result := masker.Mask(original).(input)
+				if result.Inner.Value == original.Inner.Value {
+					t.Errorf("expected nested Value to be masked, got %q", result.Inner.Value)
+				}
+			})
+		})
+	}
 }
 
 func TestMask_AnonymizeTag(t *testing.T) {
-	masker := newTestMasker(t)
+	configs := []piimasker.MaskerConfig{
+		{MaxPiiStringLength: 5},
+		{MaxPiiStringLength: 10},
+		{MaxPiiStringLength: 20},
+		{MaxPiiStringLength: 100},
+	}
+	for _, cfg := range configs {
+		cfg := cfg
+		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+			t.Parallel()
+			masker := newTestMasker(t, cfg)
 
-	t.Run("string", func(t *testing.T) {
-		type input struct {
-			Value string `Pii:"anonymize"`
-		}
-		original := input{Value: "John Smith"}
-		result := masker.Mask(original).(input)
-		if result.Value == original.Value {
-			t.Errorf("expected Value to be anonymized, got same value %q", result.Value)
-		}
-		if len(result.Value) != len(original.Value) {
-			t.Errorf("expected anonymized length %d, got %d", len(original.Value), len(result.Value))
-		}
-	})
+			t.Run("string", func(t *testing.T) {
+				type input struct {
+					Value string `Pii:"anonymize"`
+				}
+				original := input{Value: "John Smith"}
+				result := masker.Mask(original).(input)
+				if !validateAnonymization(result.Value, original.Value, cfg.MaxPiiStringLength) {
+					t.Errorf("expected Value to be anonymized, got %q", result.Value)
+				}
+			})
 
-	t.Run("int", func(t *testing.T) {
-		type input struct {
-			Value int `Pii:"anonymize"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value == 0 {
-			t.Error("expected anonymized int to be non-zero")
-		}
-	})
+			t.Run("int", func(t *testing.T) {
+				type input struct {
+					Value int `Pii:"anonymize"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value == 0 {
+					t.Error("expected anonymized int to be non-zero")
+				}
+			})
 
-	t.Run("uint", func(t *testing.T) {
-		type input struct {
-			Value uint `Pii:"anonymize"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value == 0 {
-			t.Error("expected anonymized uint to be non-zero")
-		}
-	})
+			t.Run("uint", func(t *testing.T) {
+				type input struct {
+					Value uint `Pii:"anonymize"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value == 0 {
+					t.Error("expected anonymized uint to be non-zero")
+				}
+			})
 
-	t.Run("float", func(t *testing.T) {
-		type input struct {
-			Value float64 `Pii:"anonymize"`
-		}
-		original := input{Value: 3.14}
-		result := masker.Mask(original).(input)
-		if result.Value == 0 {
-			t.Error("expected anonymized float to be non-zero")
-		}
-	})
+			t.Run("float", func(t *testing.T) {
+				type input struct {
+					Value float64 `Pii:"anonymize"`
+				}
+				original := input{Value: 3.14}
+				result := masker.Mask(original).(input)
+				if result.Value == 0 {
+					t.Error("expected anonymized float to be non-zero")
+				}
+			})
 
-	t.Run("bool", func(t *testing.T) {
-		type input struct {
-			Value bool `Pii:"anonymize"`
-		}
-		// run several times since random bool could coincidentally match
-		masker := newTestMasker(t)
-		allSame := true
-		for range 20 {
-			original := input{Value: true}
-			result := masker.Mask(original).(input)
-			if result.Value != original.Value {
-				allSame = false
-				break
-			}
-		}
-		if allSame {
-			t.Error("expected anonymized bool to differ from original at least once in 20 runs")
-		}
-	})
+			t.Run("bool", func(t *testing.T) {
+				type input struct {
+					Value bool `Pii:"anonymize"`
+				}
+				// run several times since random bool could coincidentally match
+				allSame := true
+				for range 20 {
+					original := input{Value: true}
+					result := masker.Mask(original).(input)
+					if result.Value != original.Value {
+						allSame = false
+						break
+					}
+				}
+				if allSame {
+					t.Error("expected anonymized bool to differ from original at least once in 20 runs")
+				}
+			})
 
-	t.Run("pointer", func(t *testing.T) {
-		type input struct {
-			Value *string `Pii:"anonymize"`
-		}
-		s := "secret"
-		original := input{Value: &s}
-		result := masker.Mask(original).(input)
-		if result.Value == nil {
-			t.Fatal("expected pointer to be non-nil")
-		}
-		if *result.Value == *original.Value {
-			t.Errorf("expected pointed value to be anonymized, got %q", *result.Value)
-		}
-	})
+			t.Run("pointer", func(t *testing.T) {
+				type input struct {
+					Value *string `Pii:"anonymize"`
+				}
+				s := "secret"
+				original := input{Value: &s}
+				result := masker.Mask(original).(input)
+				if result.Value == nil {
+					t.Fatal("expected pointer to be non-nil")
+				}
+				if *result.Value == *original.Value {
+					t.Errorf("expected pointed value to be anonymized, got %q", *result.Value)
+				}
+			})
 
-	t.Run("nested", func(t *testing.T) {
-		type inner struct {
-			Value string `Pii:"anonymize"`
-		}
-		type input struct{ Inner inner }
-		original := input{Inner: inner{Value: "secret"}}
-		result := masker.Mask(original).(input)
-		if result.Inner.Value == original.Inner.Value {
-			t.Errorf("expected nested Value to be anonymized, got %q", result.Inner.Value)
-		}
-	})
+			t.Run("nested", func(t *testing.T) {
+				type inner struct {
+					Value string `Pii:"anonymize"`
+				}
+				type input struct{ Inner inner }
+				original := input{Inner: inner{Value: "secret"}}
+				result := masker.Mask(original).(input)
+				if result.Inner.Value == original.Inner.Value {
+					t.Errorf("expected nested Value to be anonymized, got %q", result.Inner.Value)
+				}
+			})
+		})
+	}
 }
 
 func TestMask_ShowTag(t *testing.T) {
-	masker := newTestMasker(t)
+	configs := []piimasker.MaskerConfig{
+		{MaxPiiStringLength: 5},
+		{MaxPiiStringLength: 10},
+		{MaxPiiStringLength: 20},
+		{MaxPiiStringLength: 100},
+	}
+	for _, cfg := range configs {
+		cfg := cfg
+		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+			t.Parallel()
+			masker := newTestMasker(t, cfg)
 
-	t.Run("string", func(t *testing.T) {
-		type input struct {
-			Value string `Pii:"show"`
-		}
-		original := input{Value: "John Smith"}
-		result := masker.Mask(original).(input)
-		if result.Value != original.Value {
-			t.Errorf("expected Value to be preserved, got %q", result.Value)
-		}
-	})
+			t.Run("string", func(t *testing.T) {
+				type input struct {
+					Value string `Pii:"show"`
+				}
+				original := input{Value: "John Smith"}
+				result := masker.Mask(original).(input)
+				if result.Value != original.Value {
+					t.Errorf("expected Value to be preserved, got %q", result.Value)
+				}
+			})
 
-	t.Run("int", func(t *testing.T) {
-		type input struct {
-			Value int `Pii:"show"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != original.Value {
-			t.Errorf("expected Value to be preserved, got %d", result.Value)
-		}
-	})
+			t.Run("int", func(t *testing.T) {
+				type input struct {
+					Value int `Pii:"show"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != original.Value {
+					t.Errorf("expected Value to be preserved, got %d", result.Value)
+				}
+			})
 
-	t.Run("uint", func(t *testing.T) {
-		type input struct {
-			Value uint `Pii:"show"`
-		}
-		original := input{Value: 42}
-		result := masker.Mask(original).(input)
-		if result.Value != original.Value {
-			t.Errorf("expected Value to be preserved, got %d", result.Value)
-		}
-	})
+			t.Run("uint", func(t *testing.T) {
+				type input struct {
+					Value uint `Pii:"show"`
+				}
+				original := input{Value: 42}
+				result := masker.Mask(original).(input)
+				if result.Value != original.Value {
+					t.Errorf("expected Value to be preserved, got %d", result.Value)
+				}
+			})
 
-	t.Run("float", func(t *testing.T) {
-		type input struct {
-			Value float64 `Pii:"show"`
-		}
-		original := input{Value: 3.14}
-		result := masker.Mask(original).(input)
-		if result.Value != original.Value {
-			t.Errorf("expected Value to be preserved, got %f", result.Value)
-		}
-	})
+			t.Run("float", func(t *testing.T) {
+				type input struct {
+					Value float64 `Pii:"show"`
+				}
+				original := input{Value: 3.14}
+				result := masker.Mask(original).(input)
+				if result.Value != original.Value {
+					t.Errorf("expected Value to be preserved, got %f", result.Value)
+				}
+			})
 
-	t.Run("bool", func(t *testing.T) {
-		type input struct {
-			Value bool `Pii:"show"`
-		}
-		original := input{Value: true}
-		result := masker.Mask(original).(input)
-		if result.Value != original.Value {
-			t.Errorf("expected Value to be preserved, got %v", result.Value)
-		}
-	})
+			t.Run("bool", func(t *testing.T) {
+				type input struct {
+					Value bool `Pii:"show"`
+				}
+				original := input{Value: true}
+				result := masker.Mask(original).(input)
+				if result.Value != original.Value {
+					t.Errorf("expected Value to be preserved, got %v", result.Value)
+				}
+			})
 
-	t.Run("pointer", func(t *testing.T) {
-		type input struct {
-			Value *string `Pii:"show"`
-		}
-		s := "secret"
-		original := input{Value: &s}
-		result := masker.Mask(original).(input)
-		if result.Value == nil {
-			t.Fatal("expected pointer to be non-nil")
-		}
-		if *result.Value != *original.Value {
-			t.Errorf("expected pointed value to be preserved, got %q", *result.Value)
-		}
-	})
+			t.Run("pointer", func(t *testing.T) {
+				type input struct {
+					Value *string `Pii:"show"`
+				}
+				s := "secret"
+				original := input{Value: &s}
+				result := masker.Mask(original).(input)
+				if result.Value == nil {
+					t.Fatal("expected pointer to be non-nil")
+				}
+				if *result.Value != *original.Value {
+					t.Errorf("expected pointed value to be preserved, got %q", *result.Value)
+				}
+			})
 
-	t.Run("nested", func(t *testing.T) {
-		type inner struct {
-			Value string `Pii:"show"`
-		}
-		type input struct{ Inner inner }
-		original := input{Inner: inner{Value: "secret"}}
-		result := masker.Mask(original).(input)
-		if result.Inner.Value != original.Inner.Value {
-			t.Errorf("expected nested Value to be preserved, got %q", result.Inner.Value)
-		}
-	})
+			t.Run("nested", func(t *testing.T) {
+				type inner struct {
+					Value string `Pii:"show"`
+				}
+				type input struct{ Inner inner }
+				original := input{Inner: inner{Value: "secret"}}
+				result := masker.Mask(original).(input)
+				if result.Inner.Value != original.Inner.Value {
+					t.Errorf("expected nested Value to be preserved, got %q", result.Inner.Value)
+				}
+			})
+		})
+	}
 }
 
 func TestMask_Integration_MaskTag(t *testing.T) {
@@ -369,10 +415,10 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 	result := m.Mask(newPersonFixture()).(Person)
 
 	t.Run("top_level", func(t *testing.T) {
-		if result.FirstName != "" {
+		if !validateStringMask(result.FirstName, fixtureFirstName, testConfig.MaxPiiStringLength) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if result.LastName != "" {
+		if !validateStringMask(result.LastName, fixtureLastName, testConfig.MaxPiiStringLength) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -385,29 +431,29 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if c.Email != "" {
+		if !validateStringMask(c.Email, fixtureEmail, testConfig.MaxPiiStringLength) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if c.Phone != "" {
+		if !validateStringMask(c.Phone, fixturePhone, testConfig.MaxPiiStringLength) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if c.AltEmail != "" {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, testConfig.MaxPiiStringLength) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if a.Street != "" {
+		if !validateStringMask(a.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if a.City != "" {
+		if !validateStringMask(a.City, fixtureCity, testConfig.MaxPiiStringLength) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if a.Country != "" {
+		if !validateStringMask(a.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if a.ZipCode != "" {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -430,55 +476,55 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if pm.CardNumber != "" {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testConfig.MaxPiiStringLength) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if pm.CVV != "" {
+		if !validateStringMask(pm.CVV, fixtureCVV, testConfig.MaxPiiStringLength) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if pm.Expiry != "" {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, testConfig.MaxPiiStringLength) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if pm.HolderName != "" {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, testConfig.MaxPiiStringLength) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if ba.Street != "" {
+		if !validateStringMask(ba.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if ba.City != "" {
+		if !validateStringMask(ba.City, fixtureCity, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if ba.PostCode != "" {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if ba.Country != "" {
+		if !validateStringMask(ba.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if o.OrderID != "" {
+		if !validateStringMask(o.OrderID, fixtureOrderID, testConfig.MaxPiiStringLength) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if o.Currency != "" {
+		if !validateStringMask(o.Currency, fixtureCurrency, testConfig.MaxPiiStringLength) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if o.Notes != "" {
+		if !validateStringMask(o.Notes, fixtureNotes, testConfig.MaxPiiStringLength) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if item.ProductID != "" {
+		if !validateStringMask(item.ProductID, fixtureProductID, testConfig.MaxPiiStringLength) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if item.Name != "" {
+		if !validateStringMask(item.Name, fixtureItemName, testConfig.MaxPiiStringLength) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -491,16 +537,16 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if d.DeviceID != "" {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, testConfig.MaxPiiStringLength) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if d.UserAgent != "" {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, testConfig.MaxPiiStringLength) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if d.IPAddress != "" {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, testConfig.MaxPiiStringLength) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if d.ScreenSize != "" {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testConfig.MaxPiiStringLength) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -654,10 +700,10 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	result := m.Mask(fixture).(PersonAnonymize)
 
 	t.Run("top_level", func(t *testing.T) {
-		if result.FirstName == fixture.FirstName || len(result.FirstName) != len(fixture.FirstName) {
+		if !validateAnonymization(result.FirstName, fixture.FirstName, testConfig.MaxPiiStringLength) {
 			t.Errorf("FirstName: expected anonymized same-length string, got %q", result.FirstName)
 		}
-		if result.LastName == fixture.LastName || len(result.LastName) != len(fixture.LastName) {
+		if !validateAnonymization(result.LastName, fixture.LastName, testConfig.MaxPiiStringLength) {
 			t.Errorf("LastName: expected anonymized same-length string, got %q", result.LastName)
 		}
 		if result.Age == 0 {
@@ -668,13 +714,13 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if c.Email == fixture.Contact.Email || len(c.Email) != len(fixture.Contact.Email) {
+		if !validateAnonymization(c.Email, fixture.Contact.Email, testConfig.MaxPiiStringLength) {
 			t.Errorf("Email: expected anonymized same-length string, got %q", c.Email)
 		}
-		if c.Phone == fixture.Contact.Phone || len(c.Phone) != len(fixture.Contact.Phone) {
+		if !validateAnonymization(c.Phone, fixture.Contact.Phone, testConfig.MaxPiiStringLength) {
 			t.Errorf("Phone: expected anonymized same-length string, got %q", c.Phone)
 		}
-		if c.AltEmail == fixture.Contact.AltEmail || len(c.AltEmail) != len(fixture.Contact.AltEmail) {
+		if !validateAnonymization(c.AltEmail, fixture.Contact.AltEmail, testConfig.MaxPiiStringLength) {
 			t.Errorf("AltEmail: expected anonymized same-length string, got %q", c.AltEmail)
 		}
 	})
@@ -682,16 +728,16 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
 		fa := fixture.Contact.Address
-		if a.Street == fa.Street || len(a.Street) != len(fa.Street) {
+		if !validateAnonymization(a.Street, fa.Street, testConfig.MaxPiiStringLength) {
 			t.Errorf("Street: expected anonymized same-length string, got %q", a.Street)
 		}
-		if a.City == fa.City || len(a.City) != len(fa.City) {
+		if !validateAnonymization(a.City, fa.City, testConfig.MaxPiiStringLength) {
 			t.Errorf("City: expected anonymized same-length string, got %q", a.City)
 		}
-		if a.Country == fa.Country || len(a.Country) != len(fa.Country) {
+		if !validateAnonymization(a.Country, fa.Country, testConfig.MaxPiiStringLength) {
 			t.Errorf("Country: expected anonymized same-length string, got %q", a.Country)
 		}
-		if a.ZipCode == fa.ZipCode || len(a.ZipCode) != len(fa.ZipCode) {
+		if !validateAnonymization(a.ZipCode, fa.ZipCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("ZipCode: expected anonymized same-length string, got %q", a.ZipCode)
 		}
 	})
@@ -715,31 +761,31 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
 		fpm := fixture.PaymentMethods[0]
-		if pm.CardNumber == fpm.CardNumber || len(pm.CardNumber) != len(fpm.CardNumber) {
+		if !validateAnonymization(pm.CardNumber, fpm.CardNumber, testConfig.MaxPiiStringLength) {
 			t.Errorf("CardNumber: expected anonymized same-length string, got %q", pm.CardNumber)
 		}
-		if pm.CVV == fpm.CVV || len(pm.CVV) != len(fpm.CVV) {
+		if !validateAnonymization(pm.CVV, fpm.CVV, testConfig.MaxPiiStringLength) {
 			t.Errorf("CVV: expected anonymized same-length string, got %q", pm.CVV)
 		}
-		if pm.Expiry == fpm.Expiry || len(pm.Expiry) != len(fpm.Expiry) {
+		if !validateAnonymization(pm.Expiry, fpm.Expiry, testConfig.MaxPiiStringLength) {
 			t.Errorf("Expiry: expected anonymized same-length string, got %q", pm.Expiry)
 		}
-		if pm.HolderName == fpm.HolderName || len(pm.HolderName) != len(fpm.HolderName) {
+		if !validateAnonymization(pm.HolderName, fpm.HolderName, testConfig.MaxPiiStringLength) {
 			t.Errorf("HolderName: expected anonymized same-length string, got %q", pm.HolderName)
 		}
 		// IsDefault is a bool — skipped; non-deterministic single-run assertion, covered by TestMask_AnonymizeTag/bool
 		ba := pm.BillingAddress
 		fba := fpm.BillingAddress
-		if ba.Street == fba.Street || len(ba.Street) != len(fba.Street) {
+		if !validateAnonymization(ba.Street, fba.Street, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Street: expected anonymized same-length string, got %q", ba.Street)
 		}
-		if ba.City == fba.City || len(ba.City) != len(fba.City) {
+		if !validateAnonymization(ba.City, fba.City, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.City: expected anonymized same-length string, got %q", ba.City)
 		}
-		if ba.PostCode == fba.PostCode || len(ba.PostCode) != len(fba.PostCode) {
+		if !validateAnonymization(ba.PostCode, fba.PostCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.PostCode: expected anonymized same-length string, got %q", ba.PostCode)
 		}
-		if ba.Country == fba.Country || len(ba.Country) != len(fba.Country) {
+		if !validateAnonymization(ba.Country, fba.Country, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Country: expected anonymized same-length string, got %q", ba.Country)
 		}
 	})
@@ -747,24 +793,24 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
 		fo := fixture.Orders[0]
-		if o.OrderID == fo.OrderID || len(o.OrderID) != len(fo.OrderID) {
+		if !validateAnonymization(o.OrderID, fo.OrderID, testConfig.MaxPiiStringLength) {
 			t.Errorf("OrderID: expected anonymized same-length string, got %q", o.OrderID)
 		}
 		if o.Amount == 0 {
 			t.Errorf("Amount: expected anonymized non-zero, got 0")
 		}
-		if o.Currency == fo.Currency || len(o.Currency) != len(fo.Currency) {
+		if !validateAnonymization(o.Currency, fo.Currency, testConfig.MaxPiiStringLength) {
 			t.Errorf("Currency: expected anonymized same-length string, got %q", o.Currency)
 		}
-		if o.Notes == fo.Notes || len(o.Notes) != len(fo.Notes) {
+		if !validateAnonymization(o.Notes, fo.Notes, testConfig.MaxPiiStringLength) {
 			t.Errorf("Notes: expected anonymized same-length string, got %q", o.Notes)
 		}
 		item := o.Items[0]
 		fitem := fo.Items[0]
-		if item.ProductID == fitem.ProductID || len(item.ProductID) != len(fitem.ProductID) {
+		if !validateAnonymization(item.ProductID, fitem.ProductID, testConfig.MaxPiiStringLength) {
 			t.Errorf("ProductID: expected anonymized same-length string, got %q", item.ProductID)
 		}
-		if item.Name == fitem.Name || len(item.Name) != len(fitem.Name) {
+		if !validateAnonymization(item.Name, fitem.Name, testConfig.MaxPiiStringLength) {
 			t.Errorf("Name: expected anonymized same-length string, got %q", item.Name)
 		}
 		if item.Quantity == 0 {
@@ -778,16 +824,16 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
 		fd := fixture.Devices["mobile"]
-		if d.DeviceID == fd.DeviceID || len(d.DeviceID) != len(fd.DeviceID) {
+		if !validateAnonymization(d.DeviceID, fd.DeviceID, testConfig.MaxPiiStringLength) {
 			t.Errorf("DeviceID: expected anonymized same-length string, got %q", d.DeviceID)
 		}
-		if d.UserAgent == fd.UserAgent || len(d.UserAgent) != len(fd.UserAgent) {
+		if !validateAnonymization(d.UserAgent, fd.UserAgent, testConfig.MaxPiiStringLength) {
 			t.Errorf("UserAgent: expected anonymized same-length string, got %q", d.UserAgent)
 		}
-		if d.IPAddress == fd.IPAddress || len(d.IPAddress) != len(fd.IPAddress) {
+		if !validateAnonymization(d.IPAddress, fd.IPAddress, testConfig.MaxPiiStringLength) {
 			t.Errorf("IPAddress: expected anonymized same-length string, got %q", d.IPAddress)
 		}
-		if d.ScreenSize == fd.ScreenSize || len(d.ScreenSize) != len(fd.ScreenSize) {
+		if !validateAnonymization(d.ScreenSize, fd.ScreenSize, testConfig.MaxPiiStringLength) {
 			t.Errorf("ScreenSize: expected anonymized same-length string, got %q", d.ScreenSize)
 		}
 	})
@@ -798,10 +844,10 @@ func TestMask_Integration_NoTag(t *testing.T) {
 	result := m.Mask(newPersonNoTagFixture()).(PersonNoTag)
 
 	t.Run("top_level", func(t *testing.T) {
-		if result.FirstName != "" {
+		if !validateStringMask(result.FirstName, fixtureFirstName, testConfig.MaxPiiStringLength) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if result.LastName != "" {
+		if !validateStringMask(result.LastName, fixtureLastName, testConfig.MaxPiiStringLength) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -814,29 +860,29 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if c.Email != "" {
+		if !validateStringMask(c.Email, fixtureEmail, testConfig.MaxPiiStringLength) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if c.Phone != "" {
+		if !validateStringMask(c.Phone, fixturePhone, testConfig.MaxPiiStringLength) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if c.AltEmail != "" {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, testConfig.MaxPiiStringLength) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if a.Street != "" {
+		if !validateStringMask(a.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if a.City != "" {
+		if !validateStringMask(a.City, fixtureCity, testConfig.MaxPiiStringLength) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if a.Country != "" {
+		if !validateStringMask(a.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if a.ZipCode != "" {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -859,55 +905,55 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if pm.CardNumber != "" {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testConfig.MaxPiiStringLength) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if pm.CVV != "" {
+		if !validateStringMask(pm.CVV, fixtureCVV, testConfig.MaxPiiStringLength) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if pm.Expiry != "" {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, testConfig.MaxPiiStringLength) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if pm.HolderName != "" {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, testConfig.MaxPiiStringLength) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if ba.Street != "" {
+		if !validateStringMask(ba.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if ba.City != "" {
+		if !validateStringMask(ba.City, fixtureCity, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if ba.PostCode != "" {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if ba.Country != "" {
+		if !validateStringMask(ba.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if o.OrderID != "" {
+		if !validateStringMask(o.OrderID, fixtureOrderID, testConfig.MaxPiiStringLength) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if o.Currency != "" {
+		if !validateStringMask(o.Currency, fixtureCurrency, testConfig.MaxPiiStringLength) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if o.Notes != "" {
+		if !validateStringMask(o.Notes, fixtureNotes, testConfig.MaxPiiStringLength) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if item.ProductID != "" {
+		if !validateStringMask(item.ProductID, fixtureProductID, testConfig.MaxPiiStringLength) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if item.Name != "" {
+		if !validateStringMask(item.Name, fixtureItemName, testConfig.MaxPiiStringLength) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -920,16 +966,16 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if d.DeviceID != "" {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, testConfig.MaxPiiStringLength) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if d.UserAgent != "" {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, testConfig.MaxPiiStringLength) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if d.IPAddress != "" {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, testConfig.MaxPiiStringLength) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if d.ScreenSize != "" {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testConfig.MaxPiiStringLength) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -941,8 +987,8 @@ func TestMask_PtrChain(t *testing.T) {
 	result := masker.Mask(fixture).(PtrMask)
 
 	t.Run("mask_level", func(t *testing.T) {
-		if *result.Str != "" {
-			t.Errorf("Str: want %q, got %q", "", *result.Str)
+		if !validateStringMask(*result.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("Str: expected masked, got %q", *result.Str)
 		}
 		if *result.Int != 0 {
 			t.Errorf("Int: want 0, got %d", *result.Int)
@@ -957,18 +1003,18 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *result.Bool)
 		}
 		for i, s := range result.Slice {
-			if s != "" {
-				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			if !validateStringMask(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
+				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := result.MapVal["key"].Value; v != "" {
-			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		if v := result.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*result.PMapVal)["key"].Value; v != "" {
-			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		if v := (*result.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := result.MapPtr["key"].Value; v != "" {
-			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		if v := result.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
 
@@ -1007,8 +1053,8 @@ func TestMask_PtrChain(t *testing.T) {
 
 	t.Run("anonymize_level", func(t *testing.T) {
 		anon := result.Next.Next
-		if got := *anon.Str; len(got) != len(fixturePtrStr) || got == fixturePtrStr {
-			t.Errorf("Str: want different value of len %d, got %q", len(fixturePtrStr), got)
+		if !validateAnonymization(*anon.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("Str: want different value of len %d, got %q", len(fixturePtrStr), *anon.Str)
 		}
 		if *anon.Int == fixturePtrInt {
 			t.Errorf("Int: want anonymized value, got original %d", fixturePtrInt)
@@ -1020,7 +1066,7 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Float: want anonymized value, got original %f", fixturePtrFloat)
 		}
 		for i, s := range anon.Slice {
-			if len(s) != len(fixturePtrStr) || s == fixturePtrStr {
+			if !validateAnonymization(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
 				t.Errorf("Slice[%d]: want anonymized string of len %d, got %q", i, len(fixturePtrStr), s)
 			}
 		}
@@ -1037,8 +1083,8 @@ func TestMask_PtrChain(t *testing.T) {
 
 	t.Run("notag_level", func(t *testing.T) {
 		notag := result.Next.Next.Next
-		if *notag.Str != "" {
-			t.Errorf("Str: want %q, got %q", "", *notag.Str)
+		if !validateStringMask(*notag.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("Str: expected masked, got %q", *notag.Str)
 		}
 		if *notag.Int != 0 {
 			t.Errorf("Int: want 0, got %d", *notag.Int)
@@ -1053,18 +1099,18 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *notag.Bool)
 		}
 		for i, s := range notag.Slice {
-			if s != "" {
-				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			if !validateStringMask(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
+				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := notag.MapVal["key"].Value; v != "" {
-			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		if v := notag.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*notag.PMapVal)["key"].Value; v != "" {
-			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		if v := (*notag.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := notag.MapPtr["key"].Value; v != "" {
-			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		if v := notag.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
 }

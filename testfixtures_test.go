@@ -1,37 +1,38 @@
 package piimasker_test
 
-// raw fixture data — shared values used across all variants, and their constructors
-const (
-	fixtureFirstName  = "John"
-	fixtureLastName   = "Smith"
-	fixtureAge        = 30
-	fixtureEmail      = "john.smith@example.com"
-	fixturePhone      = "+44 7700 900000"
-	fixtureAltEmail   = "j.smith@work.com"
-	fixtureStreet     = "10 Downing St"
-	fixtureCity       = "London"
-	fixtureCountry    = "UK"
-	fixtureZipCode    = "SW1A 2AA"
-	fixtureLatitude   = 51.5074
-	fixtureLongitude  = -0.1278
-	fixtureAltitude   = 11.0
-	fixtureAccuracy   = 5.0
-	fixtureCardNumber = "4111111111111111"
-	fixtureCVV        = "123"
-	fixtureExpiry     = "12/28"
-	fixtureHolderName = "John Smith"
-	fixtureOrderID    = "ORD-001"
-	fixtureAmount     = 99.99
-	fixtureCurrency   = "GBP"
-	fixtureNotes      = "Leave at door"
-	fixtureProductID  = "PROD-001"
-	fixtureItemName   = "Widget"
-	fixtureQuantity   = 2
-	fixtureUnitPrice  = 49.99
-	fixtureDeviceID   = "DEV-001"
-	fixtureUserAgent  = "Mozilla/5.0"
-	fixtureIPAddress  = "192.168.1.1"
-	fixtureScreenSize = "1920x1080"
+import "github.com/brianvoe/gofakeit/v6"
+
+var (
+	fixtureFirstName  = gofakeit.FirstName()
+	fixtureLastName   = gofakeit.LastName()
+	fixtureAge        = gofakeit.IntRange(18, 80)
+	fixtureEmail      = gofakeit.Email()
+	fixturePhone      = gofakeit.Phone()
+	fixtureAltEmail   = gofakeit.Email()
+	fixtureStreet     = gofakeit.Street()
+	fixtureCity       = gofakeit.City()
+	fixtureCountry    = gofakeit.Country()
+	fixtureZipCode    = gofakeit.Zip()
+	fixtureLatitude   = float64(gofakeit.Latitude())
+	fixtureLongitude  = float64(gofakeit.Longitude())
+	fixtureAltitude   = gofakeit.Float64Range(0, 1000)
+	fixtureAccuracy   = gofakeit.Float64Range(1, 100)
+	fixtureCardNumber = gofakeit.CreditCardNumber(nil)
+	fixtureCVV        = gofakeit.Numerify("###")
+	fixtureExpiry     = gofakeit.CreditCardExp()
+	fixtureHolderName = gofakeit.Name()
+	fixtureOrderID    = gofakeit.UUID()
+	fixtureAmount     = gofakeit.Float64Range(1, 9999)
+	fixtureCurrency   = gofakeit.CurrencyShort()
+	fixtureNotes      = gofakeit.Sentence(5)
+	fixtureProductID  = gofakeit.UUID()
+	fixtureItemName   = gofakeit.ProductName()
+	fixtureQuantity   = gofakeit.IntRange(1, 10)
+	fixtureUnitPrice  = gofakeit.Float64Range(1, 500)
+	fixtureDeviceID   = gofakeit.UUID()
+	fixtureUserAgent  = gofakeit.UserAgent()
+	fixtureIPAddress  = gofakeit.IPv4Address()
+	fixtureScreenSize = gofakeit.LoremIpsumSentence(2)
 )
 
 // -- Raw constructors --
@@ -297,12 +298,12 @@ func newPersonNoTagFixture() PersonNoTag {
 }
 
 // Pointer fixture data
-const (
-	fixturePtrStr   = "sensitive"
-	fixturePtrInt   = 42
-	fixturePtrUint  = uint(7)
-	fixturePtrFloat = 3.14
-	fixturePtrBool  = true
+var (
+	fixturePtrStr   = gofakeit.SentenceSimple()
+	fixturePtrInt   = gofakeit.IntRange(1, 10000)
+	fixturePtrUint  = uint(gofakeit.UintRange(1, 10000))
+	fixturePtrFloat = gofakeit.Float64Range(1, 10000)
+	fixturePtrBool  = gofakeit.Bool()
 )
 
 func ptrStr(s string) *string     { return &s }
@@ -370,10 +371,10 @@ func newPtrMaskFixture() PtrMask {
 }
 
 // Unexported field fixture data
-const (
-	fixtureUnexportedName    = "Alice"
-	fixtureUnexportedAge     = 30
-	fixtureUnexportedBalance = 99.99
+var (
+	fixtureUnexportedName    = gofakeit.Name()
+	fixtureUnexportedAge     = gofakeit.IntRange(18, 80)
+	fixtureUnexportedBalance = gofakeit.Float64Range(1, 9999)
 )
 
 func newUnexportedFieldsFixture() UnexportedFields {

@@ -7,9 +7,9 @@ import (
 )
 
 // Not sure about the anonimize since some basic testing shows it's around 3 times slower than masking
-
 // I somewhat like this idea but it is just way slower so it should be removed
-func preserveNumberSize[T Number](v T) T {
+// @TODO: figure out if I want to keep something in this vain, its just way slower but might make the code a bit more readable
+func preserveNumberSize[T number](v T) T {
 	s := fmt.Sprintf("%v", v)
 	b := []byte(s)
 	for i, c := range b {
@@ -22,9 +22,10 @@ func preserveNumberSize[T Number](v T) T {
 	return result
 }
 
-func anonymizeString(s string) string {
+func anonymizeString(s string, config MaskerConfig) string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, len(s))
+	length := min(len(s), config.MaxPiiStringLength)
+	b := make([]byte, length)
 	for i := range b {
 		b[i] = chars[rand.IntN(len(chars))]
 	}

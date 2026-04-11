@@ -1,2 +1,4 @@
 github.com/aws/aws-lambda-go v1.54.0 h1:EGYpdyRGF88xszqlGcBewz811mJeRS+maNlLZXFheII=
 github.com/aws/aws-lambda-go v1.54.0/go.mod h1:dpMpZgvWx5vuQJfBt0zqBha60q7Dd7RfgJv23DymV8A=
+github.com/brianvoe/gofakeit/v6 v6.28.0 h1:Xib46XXuQfmlLS2EXRuJpqcw8St6qSZz75OUo0tgAW4=
+github.com/brianvoe/gofakeit/v6 v6.28.0/go.mod h1:Xj58BMSnFqcn/fAQeSK+/PLtC5kSb7FJIq4JyGa8vEs=

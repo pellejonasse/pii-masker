@@ -1,18 +1,19 @@
 package piimasker
 
-type PiiMode string
+type piiMode string
 
 const (
-	PiiModeNone      PiiMode = "" // no tag — inherit parent mode, which is nice for external objects
-	PiiModeShow      PiiMode = "show"
-	PiiModeMask      PiiMode = "mask"
-	PiiModeAnonymize PiiMode = "anonymize"
+	piiModeNone      piiMode = "" // no tag — inherit parent mode, which is nice for external objects
+	piiModeShow      piiMode = "show"
+	piiModeMask      piiMode = "mask"
+	piiModeAnonymize piiMode = "anonymize"
 )
 
 type MaskerConfig struct {
-	maxPiiStringLength int `default:"100"`
+	MaxPiiStringLength int // defaults to 100
 }
 
-type Number interface {
+// don't think I want to use this
+type number interface {
 	int64 | float64 | uint64
 }
