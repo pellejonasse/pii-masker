@@ -935,6 +935,140 @@ func TestMask_Integration_NoTag(t *testing.T) {
 	})
 }
 
+func TestMask_PtrChain(t *testing.T) {
+	masker := newTestMasker(t)
+	fixture := newPtrMaskFixture()
+	result := masker.Mask(fixture).(PtrMask)
+
+	t.Run("mask_level", func(t *testing.T) {
+		if *result.Str != "" {
+			t.Errorf("Str: want %q, got %q", "", *result.Str)
+		}
+		if *result.Int != 0 {
+			t.Errorf("Int: want 0, got %d", *result.Int)
+		}
+		if *result.Uint != 0 {
+			t.Errorf("Uint: want 0, got %d", *result.Uint)
+		}
+		if *result.Float != 0 {
+			t.Errorf("Float: want 0, got %f", *result.Float)
+		}
+		if *result.Bool != false {
+			t.Errorf("Bool: want false, got %v", *result.Bool)
+		}
+		for i, s := range result.Slice {
+			if s != "" {
+				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			}
+		}
+		if v := result.MapVal["key"].Value; v != "" {
+			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		}
+		if v := (*result.PMapVal)["key"].Value; v != "" {
+			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		}
+		if v := result.MapPtr["key"].Value; v != "" {
+			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		}
+	})
+
+	t.Run("show_level", func(t *testing.T) {
+		show := result.Next
+		if *show.Str != fixturePtrStr {
+			t.Errorf("Str: want %q, got %q", fixturePtrStr, *show.Str)
+		}
+		if *show.Int != fixturePtrInt {
+			t.Errorf("Int: want %d, got %d", fixturePtrInt, *show.Int)
+		}
+		if *show.Uint != fixturePtrUint {
+			t.Errorf("Uint: want %d, got %d", fixturePtrUint, *show.Uint)
+		}
+		if *show.Float != fixturePtrFloat {
+			t.Errorf("Float: want %f, got %f", fixturePtrFloat, *show.Float)
+		}
+		if *show.Bool != fixturePtrBool {
+			t.Errorf("Bool: want %v, got %v", fixturePtrBool, *show.Bool)
+		}
+		for i, s := range show.Slice {
+			if s != fixturePtrStr {
+				t.Errorf("Slice[%d]: want %q, got %q", i, fixturePtrStr, s)
+			}
+		}
+		if v := show.MapVal["key"].Value; v != fixturePtrStr {
+			t.Errorf("MapVal[key].Value: want %q, got %q", fixturePtrStr, v)
+		}
+		if v := (*show.PMapVal)["key"].Value; v != fixturePtrStr {
+			t.Errorf("PMapVal[key].Value: want %q, got %q", fixturePtrStr, v)
+		}
+		if v := show.MapPtr["key"].Value; v != fixturePtrStr {
+			t.Errorf("MapPtr[key].Value: want %q, got %q", fixturePtrStr, v)
+		}
+	})
+
+	t.Run("anonymize_level", func(t *testing.T) {
+		anon := result.Next.Next
+		if got := *anon.Str; len(got) != len(fixturePtrStr) || got == fixturePtrStr {
+			t.Errorf("Str: want different value of len %d, got %q", len(fixturePtrStr), got)
+		}
+		if *anon.Int == fixturePtrInt {
+			t.Errorf("Int: want anonymized value, got original %d", fixturePtrInt)
+		}
+		if *anon.Uint == fixturePtrUint {
+			t.Errorf("Uint: want anonymized value, got original %d", fixturePtrUint)
+		}
+		if *anon.Float == fixturePtrFloat {
+			t.Errorf("Float: want anonymized value, got original %f", fixturePtrFloat)
+		}
+		for i, s := range anon.Slice {
+			if len(s) != len(fixturePtrStr) || s == fixturePtrStr {
+				t.Errorf("Slice[%d]: want anonymized string of len %d, got %q", i, len(fixturePtrStr), s)
+			}
+		}
+		if v := anon.MapVal["key"].Value; v == fixturePtrStr {
+			t.Errorf("MapVal[key].Value: want anonymized, got original %q", v)
+		}
+		if v := (*anon.PMapVal)["key"].Value; v == fixturePtrStr {
+			t.Errorf("PMapVal[key].Value: want anonymized, got original %q", v)
+		}
+		if v := anon.MapPtr["key"].Value; v == fixturePtrStr {
+			t.Errorf("MapPtr[key].Value: want anonymized, got original %q", v)
+		}
+	})
+
+	t.Run("notag_level", func(t *testing.T) {
+		notag := result.Next.Next.Next
+		if *notag.Str != "" {
+			t.Errorf("Str: want %q, got %q", "", *notag.Str)
+		}
+		if *notag.Int != 0 {
+			t.Errorf("Int: want 0, got %d", *notag.Int)
+		}
+		if *notag.Uint != 0 {
+			t.Errorf("Uint: want 0, got %d", *notag.Uint)
+		}
+		if *notag.Float != 0 {
+			t.Errorf("Float: want 0, got %f", *notag.Float)
+		}
+		if *notag.Bool != false {
+			t.Errorf("Bool: want false, got %v", *notag.Bool)
+		}
+		for i, s := range notag.Slice {
+			if s != "" {
+				t.Errorf("Slice[%d]: want %q, got %q", i, "", s)
+			}
+		}
+		if v := notag.MapVal["key"].Value; v != "" {
+			t.Errorf("MapVal[key].Value: want %q, got %q", "", v)
+		}
+		if v := (*notag.PMapVal)["key"].Value; v != "" {
+			t.Errorf("PMapVal[key].Value: want %q, got %q", "", v)
+		}
+		if v := notag.MapPtr["key"].Value; v != "" {
+			t.Errorf("MapPtr[key].Value: want %q, got %q", "", v)
+		}
+	})
+}
+
 func BenchmarkMask(b *testing.B) {
 	masker := newTestMasker(b)
 
