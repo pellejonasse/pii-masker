@@ -14,7 +14,7 @@ type PiiMasker interface {
 	Mask(obj any) any
 }
 
-// Don't necessarily need a struct and it might be more convenient if it isn't a struct
+// Don't necessarily need a struct and it might be more convenient if it isn't a struct, since now I have to worry about global state
 type piiMasker struct {
 	config    MaskerConfig
 	typeCache sync.Map // map[reflect.Type][]PiiMode, populated on first encounter of each struct type
