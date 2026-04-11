@@ -340,3 +340,28 @@ type PtrMask struct {
 	MapPtr  map[string]*PtrMapValue `Pii:"mask"`
 	Next    *PtrShow
 }
+
+// 4 is maybe a bit overkill
+type UnexportedFields struct {
+	name    string  `Pii:"mask"`
+	age     int     `Pii:"mask"`
+	balance float64 `Pii:"mask"`
+}
+
+type UnexportedFieldsShow struct {
+	name    string  `Pii:"show"`
+	age     int     `Pii:"show"`
+	balance float64 `Pii:"show"`
+}
+
+type UnexportedFieldsAnonymize struct {
+	name    string  `Pii:"anonymize"`
+	age     int     `Pii:"anonymize"`
+	balance float64 `Pii:"anonymize"`
+}
+
+type UnexportedFieldsNoTag struct {
+	name    string
+	age     int
+	balance float64
+}

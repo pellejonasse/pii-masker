@@ -1069,6 +1069,42 @@ func TestMask_PtrChain(t *testing.T) {
 	})
 }
 
+func TestMask_UnexportedFields(t *testing.T) {
+	masker := newTestMasker(t)
+
+	t.Run("mask", func(t *testing.T) {
+		input := newUnexportedFieldsFixture()
+		result := masker.Mask(input).(UnexportedFields)
+		if result.name != "" || result.age != 0 || result.balance != 0 {
+			t.Errorf("expected all fields to remain zero, got name=%q age=%d balance=%f", result.name, result.age, result.balance)
+		}
+	})
+
+	t.Run("show", func(t *testing.T) {
+		input := newUnexportedFieldsShowFixture()
+		result := masker.Mask(input).(UnexportedFieldsShow)
+		if result.name != "" || result.age != 0 || result.balance != 0 {
+			t.Errorf("expected all fields to remain zero, got name=%q age=%d balance=%f", result.name, result.age, result.balance)
+		}
+	})
+
+	t.Run("anonymize", func(t *testing.T) {
+		input := newUnexportedFieldsAnonymizeFixture()
+		result := masker.Mask(input).(UnexportedFieldsAnonymize)
+		if result.name != "" || result.age != 0 || result.balance != 0 {
+			t.Errorf("expected all fields to remain zero, got name=%q age=%d balance=%f", result.name, result.age, result.balance)
+		}
+	})
+
+	t.Run("no_tag", func(t *testing.T) {
+		input := newUnexportedFieldsNoTagFixture()
+		result := masker.Mask(input).(UnexportedFieldsNoTag)
+		if result.name != "" || result.age != 0 || result.balance != 0 {
+			t.Errorf("expected all fields to remain zero, got name=%q age=%d balance=%f", result.name, result.age, result.balance)
+		}
+	})
+}
+
 func BenchmarkMask(b *testing.B) {
 	masker := newTestMasker(b)
 
