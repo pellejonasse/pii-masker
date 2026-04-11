@@ -112,6 +112,28 @@ Only reach for `anonymize` when the output needs to look structurally plausible 
 
 Struct type metadata is parsed via reflection only once per unique type and cached in a `sync.Map`, so the per-call overhead is minimal at steady state. The masker is safe for concurrent use.
 
+### Benchmarks
+
+All figures are for **1,000 invocations** on an Apple M-series chip (`-12` = 12 logical cores). The full-struct benchmarks (`BenchmarkMask`) operate on a deeply nested `Person` fixture with slices, maps, and multiple levels of nesting.
+
+#### Full struct (BenchmarkMask)
+
+| Mode | Time / 1k calls | Memory / 1k calls | Allocs / 1k calls |
+|---|---|---|---|
+| `mask` | ~2.24 ms | ~2.80 MB | 45,000 |
+| `show` | ~1.21 ms | ~1.98 MB | 15,000 |
+| `anonymize` | ~6.63 ms | ~2.80 MB | 45,000 |
+| no tag (default mask) | ~1.63 ms | ~2.80 MB | 45,000 |
+
+#### Individual value anonymization (BenchmarkAnonymize)
+
+| Type | Time / 1k calls | Memory / 1k calls | Allocs / 1k calls |
+|---|---|---|---|
+| `string` | ~227 µs | 62 KB | 4,000 |
+| `int` | ~182 µs | 31 KB | 4,000 |
+| `uint` | ~167 µs | 31 KB | 4,000 |
+| `float64` | ~215 µs | 23 KB | 3,000 |
+
 ## Integration with Uber Zap
 
 `Mask` returns `any`, so it slots directly into `zap.Any`:
@@ -143,4 +165,4 @@ if logger.Core().Enabled(zap.DebugLevel) {
 ## Unexported Fields and Named Types
 
 - **Unexported fields** are silently skipped; their zero values appear in the copy.
-- **Named string types** (e.g. `type UserID string`) are copied verbatim and are never masked, to avoid breaking custom type semantics. Tag the fields that hold them explicitly if masking is required.
+- **Named string types** (e.g. `type Status string`, `type Role string`) are treated identically to plain strings — they are masked, anonymized, or shown according to the active tag or propagated mode. This means enum-like constants will have their underlying string value replaced when masked or anonymized.
