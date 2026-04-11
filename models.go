@@ -3,7 +3,7 @@ package piimasker
 type PiiMode string
 
 const (
-	PiiModeNone      PiiMode = "" // no tag — inherit parent mode
+	PiiModeNone      PiiMode = "" // no tag — inherit parent mode, which is nice for external objects
 	PiiModeShow      PiiMode = "show"
 	PiiModeMask      PiiMode = "mask"
 	PiiModeAnonymize PiiMode = "anonymize"

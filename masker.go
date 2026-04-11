@@ -34,6 +34,7 @@ func (m *piiMasker) Mask(obj any) any {
 }
 
 // recursiveStructTraverser is a helper function that performs the actual traversal and masking of the struct fields. It takes three parameters: copy, which is the value being constructed as a copy of the original; original, which is the value being traversed; and piiValue, a boolean indicating whether the current field is tagged as PII. The function checks the type of each field and applies masking accordingly. For strings, it replaces the content with a fixed mask while preserving the length up to a maximum defined length. For other types, it applies a generic mask. The function handles nested structures and collections recursively, ensuring that all PII fields are masked throughout the entire object hierarchy.
+// NOTE: Should I add support for time.Time and raw json strings?
 func (m *piiMasker) recursiveStructTraverser(copy, original reflect.Value, piiMode PiiMode) {
 	if original.CanInterface() {
 		switch k := original.Kind(); {

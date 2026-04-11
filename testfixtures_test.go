@@ -295,3 +295,75 @@ func newPersonNoTagFixture() PersonNoTag {
 		},
 	}
 }
+
+const (
+	fixturePtrStr   = "sensitive"
+	fixturePtrInt   = 42
+	fixturePtrUint  = uint(7)
+	fixturePtrFloat = 3.14
+	fixturePtrBool  = true
+)
+
+func ptrStr(s string) *string     { return &s }
+func ptrInt(i int) *int           { return &i }
+func ptrUint(u uint) *uint        { return &u }
+func ptrFloat(f float64) *float64 { return &f }
+func ptrBool(b bool) *bool        { return &b }
+
+func newPtrMaskFixture() PtrMask {
+	fields := func() (map[string]PtrMapValue, *map[string]PtrMapValue, map[string]*PtrMapValue) {
+		m := map[string]PtrMapValue{"key": {Value: fixturePtrStr}}
+		mp := map[string]*PtrMapValue{"key": {Value: fixturePtrStr}}
+		return m, &m, mp
+	}
+
+	noTagM, noTagPM, noTagMP := fields()
+	anonM, anonPM, anonMP := fields()
+	showM, showPM, showMP := fields()
+	maskM, maskPM, maskMP := fields()
+
+	return PtrMask{
+		Str:     ptrStr(fixturePtrStr),
+		Int:     ptrInt(fixturePtrInt),
+		Uint:    ptrUint(fixturePtrUint),
+		Float:   ptrFloat(fixturePtrFloat),
+		Bool:    ptrBool(fixturePtrBool),
+		Slice:   []string{fixturePtrStr, fixturePtrStr},
+		MapVal:  maskM,
+		PMapVal: maskPM,
+		MapPtr:  maskMP,
+		Next: &PtrShow{
+			Str:     ptrStr(fixturePtrStr),
+			Int:     ptrInt(fixturePtrInt),
+			Uint:    ptrUint(fixturePtrUint),
+			Float:   ptrFloat(fixturePtrFloat),
+			Bool:    ptrBool(fixturePtrBool),
+			Slice:   []string{fixturePtrStr, fixturePtrStr},
+			MapVal:  showM,
+			PMapVal: showPM,
+			MapPtr:  showMP,
+			Next: &PtrAnonymize{
+				Str:     ptrStr(fixturePtrStr),
+				Int:     ptrInt(fixturePtrInt),
+				Uint:    ptrUint(fixturePtrUint),
+				Float:   ptrFloat(fixturePtrFloat),
+				Bool:    ptrBool(fixturePtrBool),
+				Slice:   []string{fixturePtrStr, fixturePtrStr},
+				MapVal:  anonM,
+				PMapVal: anonPM,
+				MapPtr:  anonMP,
+				Next: &PtrNoTag{
+					Str:     ptrStr(fixturePtrStr),
+					Int:     ptrInt(fixturePtrInt),
+					Uint:    ptrUint(fixturePtrUint),
+					Float:   ptrFloat(fixturePtrFloat),
+					Bool:    ptrBool(fixturePtrBool),
+					Slice:   []string{fixturePtrStr, fixturePtrStr},
+					MapVal:  noTagM,
+					PMapVal: noTagPM,
+					MapPtr:  noTagMP,
+				},
+			},
+		},
+	}
+}
