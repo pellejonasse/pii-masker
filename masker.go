@@ -142,11 +142,7 @@ func maskString(s string, config MaskerConfig) string {
 }
 
 func applyStringPiiMode(copy, original reflect.Value, piiMode piiMode, config MaskerConfig) {
-	if original.Type().Name() != original.Kind().String() {
-		copy.Set(reflect.ValueOf(original.Interface()))
-		return
-	}
-	s := original.Interface().(string)
+	s := original.String()
 	switch piiMode {
 	case piiModeShow:
 		copy.SetString(s)

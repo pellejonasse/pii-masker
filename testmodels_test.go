@@ -365,3 +365,35 @@ type UnexportedFieldsNoTag struct {
 	age     int
 	balance float64
 }
+
+type Status string
+
+const (
+	StatusActive   Status = "active"
+	StatusInactive Status = "inactive"
+)
+
+type Role string
+
+const (
+	RoleAdmin Role = "admin"
+	RoleGuest Role = "guest"
+)
+
+type namedTypeStruct struct {
+	Status Status `Pii:"mask"`
+	Role   Role   `Pii:"mask"`
+	Name   string `Pii:"mask"` // plain string — should be masked normally
+}
+
+type namedTypeStructShow struct {
+	Status Status `Pii:"show"`
+	Role   Role   `Pii:"show"`
+	Name   string `Pii:"show"`
+}
+
+type namedTypeStructAnonymize struct {
+	Status Status `Pii:"anonymize"`
+	Role   Role   `Pii:"anonymize"`
+	Name   string `Pii:"anonymize"`
+}

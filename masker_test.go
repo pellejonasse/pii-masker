@@ -1151,6 +1151,82 @@ func TestMask_UnexportedFields(t *testing.T) {
 	})
 }
 
+func TestMask_NamedStringType(t *testing.T) {
+	masker := newTestMasker(t)
+
+	t.Run("mask_tag_masks_named_type", func(t *testing.T) {
+		input := namedTypeStruct{Status: StatusActive, Role: RoleAdmin, Name: "Alice"}
+		result := masker.Mask(input).(namedTypeStruct)
+
+		if !validateStringMask(string(result.Status), string(input.Status), testConfig.MaxPiiStringLength) {
+			t.Errorf("Status: expected masked, got %q", result.Status)
+		}
+		if !validateStringMask(string(result.Role), string(input.Role), testConfig.MaxPiiStringLength) {
+			t.Errorf("Role: expected masked, got %q", result.Role)
+		}
+		if !validateStringMask(result.Name, input.Name, testConfig.MaxPiiStringLength) {
+			t.Errorf("Name: expected masked, got %q", result.Name)
+		}
+	})
+
+	t.Run("no_tag_masks_named_type", func(t *testing.T) {
+		type input struct {
+			Status Status
+			Role   Role
+		}
+		v := input{Status: StatusActive, Role: RoleAdmin}
+		result := masker.Mask(v).(input)
+
+		if !validateStringMask(string(result.Status), string(v.Status), testConfig.MaxPiiStringLength) {
+			t.Errorf("Status: expected masked (no tag), got %q", result.Status)
+		}
+		if !validateStringMask(string(result.Role), string(v.Role), testConfig.MaxPiiStringLength) {
+			t.Errorf("Role: expected masked (no tag), got %q", result.Role)
+		}
+	})
+
+	t.Run("show_tag_preserves_named_type", func(t *testing.T) {
+		input := namedTypeStructShow{Status: StatusInactive, Role: RoleGuest, Name: "Bob"}
+		result := masker.Mask(input).(namedTypeStructShow)
+
+		if result.Status != input.Status {
+			t.Errorf("Status: got %q, want %q", result.Status, input.Status)
+		}
+		if result.Role != input.Role {
+			t.Errorf("Role: got %q, want %q", result.Role, input.Role)
+		}
+		if result.Name != input.Name {
+			t.Errorf("Name: got %q, want %q", result.Name, input.Name)
+		}
+	})
+
+	t.Run("anonymize_tag_anonymizes_named_type", func(t *testing.T) {
+		input := namedTypeStructAnonymize{Status: StatusActive, Role: RoleAdmin, Name: "Charlie"}
+		result := masker.Mask(input).(namedTypeStructAnonymize)
+
+		if !validateAnonymization(string(result.Status), string(input.Status), testConfig.MaxPiiStringLength) {
+			t.Errorf("Status: expected anonymized (different, same length), got %q", result.Status)
+		}
+		if !validateAnonymization(string(result.Role), string(input.Role), testConfig.MaxPiiStringLength) {
+			t.Errorf("Role: expected anonymized (different, same length), got %q", result.Role)
+		}
+		if !validateAnonymization(result.Name, input.Name, testConfig.MaxPiiStringLength) {
+			t.Errorf("Name: expected anonymized (different, same length), got %q", result.Name)
+		}
+	})
+
+	t.Run("original_not_mutated", func(t *testing.T) {
+		input := namedTypeStruct{Status: StatusActive, Role: RoleAdmin, Name: "Dave"}
+		masker.Mask(input)
+		if input.Status != StatusActive {
+			t.Error("original Status was mutated")
+		}
+		if input.Role != RoleAdmin {
+			t.Error("original Role was mutated")
+		}
+	})
+}
+
 func BenchmarkMask(b *testing.B) {
 	masker := newTestMasker(b)
 
