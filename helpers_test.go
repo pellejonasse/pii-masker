@@ -6,10 +6,16 @@ import (
 	piimasker "piimasker"
 )
 
+// could potentially pass this as a parameter so you can test multiple settings, in fact
+var testConfig = piimasker.MaskerConfig{MaxPiiStringLength: 100}
+
 // newTestMasker creates a Masker with default config for use in tests and benchmarks.
-func newTestMasker(tb testing.TB) piimasker.PiiMasker {
+func newTestMasker(tb testing.TB, config ...piimasker.MaskerConfig) piimasker.PiiMasker {
 	tb.Helper()
-	return piimasker.NewMasker(piimasker.MaskerConfig{})
+	if len(config) == 0 {
+		return piimasker.NewMasker(testConfig)
+	}
+	return piimasker.NewMasker(config[0])
 }
 
 // validateStringMask reports whether result is all '*' characters with the same length as original
@@ -28,6 +34,16 @@ func validateStringMask(result, original string, maxLen ...int) bool {
 		}
 	}
 	return true
+}
+
+// validateAnonymization reports whether result has the same length as original (capped at maxLen
+// if provided) and has different content.
+func validateAnonymization(result, original string, maxLen ...int) bool {
+	cap := len(original)
+	if len(maxLen) > 0 && maxLen[0] < cap {
+		cap = maxLen[0]
+	}
+	return len(result) == cap && result != original
 }
 
 // newBenchMasker creates a Masker with default config for use in benchmarks.

@@ -22,9 +22,10 @@ func preserveNumberSize[T number](v T) T {
 	return result
 }
 
-func anonymizeString(s string) string {
+func anonymizeString(s string, config MaskerConfig) string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, len(s))
+	length := min(len(s), config.MaxPiiStringLength)
+	b := make([]byte, length)
 	for i := range b {
 		b[i] = chars[rand.IntN(len(chars))]
 	}

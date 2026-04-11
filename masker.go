@@ -151,7 +151,7 @@ func applyStringPiiMode(copy, original reflect.Value, piiMode piiMode, config Ma
 	case piiModeShow:
 		copy.SetString(s)
 	case piiModeAnonymize:
-		copy.SetString(anonymizeString(s))
+		copy.SetString(anonymizeString(s, config))
 	default:
 		copy.SetString(maskString(s, config))
 	}
