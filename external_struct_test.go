@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
+// added tests for external packages to see if the masker can handle them. 
 type CloudWatchWrapper struct {
 	Event  events.CloudWatchEvent `Pii:"mask"`
 	UserID string                 `Pii:"mask"`
