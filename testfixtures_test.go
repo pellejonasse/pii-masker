@@ -296,6 +296,7 @@ func newPersonNoTagFixture() PersonNoTag {
 	}
 }
 
+// Pointer fixture data
 const (
 	fixturePtrStr   = "sensitive"
 	fixturePtrInt   = 42
@@ -366,4 +367,27 @@ func newPtrMaskFixture() PtrMask {
 			},
 		},
 	}
+}
+
+// Unexported field fixture data
+const (
+	fixtureUnexportedName    = "Alice"
+	fixtureUnexportedAge     = 30
+	fixtureUnexportedBalance = 99.99
+)
+
+func newUnexportedFieldsFixture() UnexportedFields {
+	return UnexportedFields{name: fixtureUnexportedName, age: fixtureUnexportedAge, balance: fixtureUnexportedBalance}
+}
+
+func newUnexportedFieldsShowFixture() UnexportedFieldsShow {
+	return UnexportedFieldsShow{name: fixtureUnexportedName, age: fixtureUnexportedAge, balance: fixtureUnexportedBalance}
+}
+
+func newUnexportedFieldsAnonymizeFixture() UnexportedFieldsAnonymize {
+	return UnexportedFieldsAnonymize{name: fixtureUnexportedName, age: fixtureUnexportedAge, balance: fixtureUnexportedBalance}
+}
+
+func newUnexportedFieldsNoTagFixture() UnexportedFieldsNoTag {
+	return UnexportedFieldsNoTag{name: fixtureUnexportedName, age: fixtureUnexportedAge, balance: fixtureUnexportedBalance}
 }
