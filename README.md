@@ -2,12 +2,6 @@
 
 A reflection-based PII masking library for Go. Given any value — struct, map, slice, pointer, or interface — it produces a deep copy with sensitive fields masked, anonymized, or passed through unchanged based on struct field tags. The original value is never mutated.
 
-## Installation
-
-```sh
-go get piimasker
-```
-
 ## Quick Start
 
 ```go
