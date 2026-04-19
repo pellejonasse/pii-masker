@@ -3,7 +3,7 @@ package piimasker_test
 import (
 	"testing"
 
-	piimasker "piimasker"
+	piimasker "github.com/pellejonasse/pii-masker"
 )
 
 // could potentially pass this as a parameter so you can test multiple settings, in fact

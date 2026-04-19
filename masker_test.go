@@ -2,7 +2,7 @@ package piimasker_test
 
 import (
 	"fmt"
-	"piimasker"
+	piimasker "github.com/pellejonasse/pii-masker"
 	"testing"
 )
 
