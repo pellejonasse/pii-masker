@@ -57,7 +57,7 @@ func TestZapIntegration(t *testing.T) {
 	}
 
 	// Email tagged mask — must be all '*', same length
-	if !validateStringMask(logged_user.Email, user.Email, testConfig.MaxPiiStringLength) {
+	if !validateStringMask(logged_user.Email, user.Email, testMaxLen) {
 		t.Errorf("Email: expected masked string, got %q", logged_user.Email)
 	}
 
@@ -67,7 +67,7 @@ func TestZapIntegration(t *testing.T) {
 	}
 
 	// Name tagged anonymize — must be same length but different value
-	if !validateAnonymization(logged_user.Name, user.Name, testConfig.MaxPiiStringLength) {
+	if !validateAnonymization(logged_user.Name, user.Name, testMaxLen) {
 		t.Errorf("Name: expected anonymized string (different, same length), got %q", logged_user.Name)
 	}
 

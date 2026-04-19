@@ -52,36 +52,36 @@ func TestMask_ExternalStruct_Propagation(t *testing.T) {
 	result := masker.Mask(fixture).(cloudWatchWrapper)
 
 	t.Run("userid_masked", func(t *testing.T) {
-		if !validateStringMask(result.UserID, fixture.UserID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.UserID, fixture.UserID, testMaxLen) {
 			t.Errorf("UserID: expected masked, got %q", result.UserID)
 		}
 	})
 
 	t.Run("external_strings_masked", func(t *testing.T) {
 		e := result.Event
-		if !validateStringMask(e.Version, fixture.Event.Version, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Version, fixture.Event.Version, testMaxLen) {
 			t.Errorf("Version: expected masked, got %q", e.Version)
 		}
-		if !validateStringMask(e.ID, fixture.Event.ID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.ID, fixture.Event.ID, testMaxLen) {
 			t.Errorf("ID: expected masked, got %q", e.ID)
 		}
-		if !validateStringMask(e.DetailType, fixture.Event.DetailType, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.DetailType, fixture.Event.DetailType, testMaxLen) {
 			t.Errorf("DetailType: expected masked, got %q", e.DetailType)
 		}
-		if !validateStringMask(e.Source, fixture.Event.Source, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Source, fixture.Event.Source, testMaxLen) {
 			t.Errorf("Source: expected masked, got %q", e.Source)
 		}
-		if !validateStringMask(e.AccountID, fixture.Event.AccountID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.AccountID, fixture.Event.AccountID, testMaxLen) {
 			t.Errorf("AccountID: expected masked, got %q", e.AccountID)
 		}
-		if !validateStringMask(e.Region, fixture.Event.Region, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Region, fixture.Event.Region, testMaxLen) {
 			t.Errorf("Region: expected masked, got %q", e.Region)
 		}
 	})
 
 	t.Run("external_slice_masked", func(t *testing.T) {
 		for i, r := range result.Event.Resources {
-			if !validateStringMask(r, fixture.Event.Resources[i], testConfig.MaxPiiStringLength) {
+			if !validateStringMask(r, fixture.Event.Resources[i], testMaxLen) {
 				t.Errorf("Resources[%d]: expected masked, got %q", i, r)
 			}
 		}
@@ -144,33 +144,33 @@ func TestMask_ExternalStruct_Anonymize(t *testing.T) {
 	result := masker.Mask(input).(cloudWatchWrapperAnonymize)
 
 	t.Run("userid_anonymized", func(t *testing.T) {
-		if !validateAnonymization(result.UserID, fixture.UserID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(result.UserID, fixture.UserID, testMaxLen) {
 			t.Errorf("UserID: want anonymized string of len %d, got %q", len(fixture.UserID), result.UserID)
 		}
 	})
 
 	t.Run("external_strings_anonymized", func(t *testing.T) {
 		e := result.Event
-		if !validateAnonymization(e.Version, fixture.Event.Version, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(e.Version, fixture.Event.Version, testMaxLen) {
 			t.Errorf("Version: want anonymized string of len %d, got %q", len(fixture.Event.Version), e.Version)
 		}
-		if !validateAnonymization(e.ID, fixture.Event.ID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(e.ID, fixture.Event.ID, testMaxLen) {
 			t.Errorf("ID: want anonymized string of len %d, got %q", len(fixture.Event.ID), e.ID)
 		}
-		if !validateAnonymization(e.Source, fixture.Event.Source, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(e.Source, fixture.Event.Source, testMaxLen) {
 			t.Errorf("Source: want anonymized string of len %d, got %q", len(fixture.Event.Source), e.Source)
 		}
-		if !validateAnonymization(e.AccountID, fixture.Event.AccountID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(e.AccountID, fixture.Event.AccountID, testMaxLen) {
 			t.Errorf("AccountID: want anonymized string of len %d, got %q", len(fixture.Event.AccountID), e.AccountID)
 		}
-		if !validateAnonymization(e.Region, fixture.Event.Region, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(e.Region, fixture.Event.Region, testMaxLen) {
 			t.Errorf("Region: want anonymized string of len %d, got %q", len(fixture.Event.Region), e.Region)
 		}
 	})
 
 	t.Run("external_slice_anonymized", func(t *testing.T) {
 		for i, r := range result.Event.Resources {
-			if !validateAnonymization(r, fixture.Event.Resources[i], testConfig.MaxPiiStringLength) {
+			if !validateAnonymization(r, fixture.Event.Resources[i], testMaxLen) {
 				t.Errorf("Resources[%d]: want anonymized string of len %d, got %q", i, len(fixture.Event.Resources[i]), r)
 			}
 		}
@@ -187,36 +187,36 @@ func TestMask_ExternalStruct_NoTag(t *testing.T) {
 	result := masker.Mask(input).(cloudWatchWrapperNoTag)
 
 	t.Run("userid_masked", func(t *testing.T) {
-		if !validateStringMask(result.UserID, fixture.UserID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.UserID, fixture.UserID, testMaxLen) {
 			t.Errorf("UserID: expected masked, got %q", result.UserID)
 		}
 	})
 
 	t.Run("external_strings_masked", func(t *testing.T) {
 		e := result.Event
-		if !validateStringMask(e.Version, fixture.Event.Version, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Version, fixture.Event.Version, testMaxLen) {
 			t.Errorf("Version: expected masked, got %q", e.Version)
 		}
-		if !validateStringMask(e.ID, fixture.Event.ID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.ID, fixture.Event.ID, testMaxLen) {
 			t.Errorf("ID: expected masked, got %q", e.ID)
 		}
-		if !validateStringMask(e.DetailType, fixture.Event.DetailType, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.DetailType, fixture.Event.DetailType, testMaxLen) {
 			t.Errorf("DetailType: expected masked, got %q", e.DetailType)
 		}
-		if !validateStringMask(e.Source, fixture.Event.Source, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Source, fixture.Event.Source, testMaxLen) {
 			t.Errorf("Source: expected masked, got %q", e.Source)
 		}
-		if !validateStringMask(e.AccountID, fixture.Event.AccountID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.AccountID, fixture.Event.AccountID, testMaxLen) {
 			t.Errorf("AccountID: expected masked, got %q", e.AccountID)
 		}
-		if !validateStringMask(e.Region, fixture.Event.Region, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(e.Region, fixture.Event.Region, testMaxLen) {
 			t.Errorf("Region: expected masked, got %q", e.Region)
 		}
 	})
 
 	t.Run("external_slice_masked", func(t *testing.T) {
 		for i, r := range result.Event.Resources {
-			if !validateStringMask(r, fixture.Event.Resources[i], testConfig.MaxPiiStringLength) {
+			if !validateStringMask(r, fixture.Event.Resources[i], testMaxLen) {
 				t.Errorf("Resources[%d]: expected masked, got %q", i, r)
 			}
 		}

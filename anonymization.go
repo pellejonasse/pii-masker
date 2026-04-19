@@ -22,7 +22,7 @@ func preserveNumberSize[T number](v T) T {
 	return result
 }
 
-func anonymizeString(s string, config MaskerConfig) string {
+func anonymizeString(s string, config maskerConfig) string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	length := min(len(s), config.MaxPiiStringLength)
 	b := make([]byte, length)

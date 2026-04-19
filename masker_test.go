@@ -7,17 +7,12 @@ import (
 )
 
 func TestMask_DefaultBehaviour(t *testing.T) {
-	configs := []piimasker.MaskerConfig{
-		{MaxPiiStringLength: 5},
-		{MaxPiiStringLength: 10},
-		{MaxPiiStringLength: 20},
-		{MaxPiiStringLength: 100},
-	}
-	for _, cfg := range configs {
-		cfg := cfg
-		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+	maxLens := []int{5, 10, 20, 100}
+	for _, maxLen := range maxLens {
+		maxLen := maxLen
+		t.Run(fmt.Sprintf("maxLen=%d", maxLen), func(t *testing.T) {
 			t.Parallel()
-			masker := newTestMasker(t, cfg)
+			masker := newTestMasker(t, piimasker.WithMaxPiiStringLength(maxLen))
 
 			t.Run("string", func(t *testing.T) {
 				type input struct{ Value string }
@@ -109,17 +104,12 @@ func TestMask_DefaultBehaviour(t *testing.T) {
 }
 
 func TestMask_MaskTag(t *testing.T) {
-	configs := []piimasker.MaskerConfig{
-		{MaxPiiStringLength: 5},
-		{MaxPiiStringLength: 10},
-		{MaxPiiStringLength: 20},
-		{MaxPiiStringLength: 100},
-	}
-	for _, cfg := range configs {
-		cfg := cfg
-		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+	maxLens := []int{5, 10, 20, 100}
+	for _, maxLen := range maxLens {
+		maxLen := maxLen
+		t.Run(fmt.Sprintf("maxLen=%d", maxLen), func(t *testing.T) {
 			t.Parallel()
-			masker := newTestMasker(t, cfg)
+			masker := newTestMasker(t, piimasker.WithMaxPiiStringLength(maxLen))
 
 			t.Run("string", func(t *testing.T) {
 				type input struct {
@@ -207,17 +197,12 @@ func TestMask_MaskTag(t *testing.T) {
 }
 
 func TestMask_AnonymizeTag(t *testing.T) {
-	configs := []piimasker.MaskerConfig{
-		{MaxPiiStringLength: 5},
-		{MaxPiiStringLength: 10},
-		{MaxPiiStringLength: 20},
-		{MaxPiiStringLength: 100},
-	}
-	for _, cfg := range configs {
-		cfg := cfg
-		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+	maxLens := []int{5, 10, 20, 100}
+	for _, maxLen := range maxLens {
+		maxLen := maxLen
+		t.Run(fmt.Sprintf("maxLen=%d", maxLen), func(t *testing.T) {
 			t.Parallel()
-			masker := newTestMasker(t, cfg)
+			masker := newTestMasker(t, piimasker.WithMaxPiiStringLength(maxLen))
 
 			t.Run("string", func(t *testing.T) {
 				type input struct {
@@ -225,7 +210,7 @@ func TestMask_AnonymizeTag(t *testing.T) {
 				}
 				original := input{Value: "John Smith"}
 				result := masker.Mask(original).(input)
-				if !validateAnonymization(result.Value, original.Value, cfg.MaxPiiStringLength) {
+				if !validateAnonymization(result.Value, original.Value, maxLen) {
 					t.Errorf("expected Value to be anonymized, got %q", result.Value)
 				}
 			})
@@ -313,17 +298,12 @@ func TestMask_AnonymizeTag(t *testing.T) {
 }
 
 func TestMask_ShowTag(t *testing.T) {
-	configs := []piimasker.MaskerConfig{
-		{MaxPiiStringLength: 5},
-		{MaxPiiStringLength: 10},
-		{MaxPiiStringLength: 20},
-		{MaxPiiStringLength: 100},
-	}
-	for _, cfg := range configs {
-		cfg := cfg
-		t.Run(fmt.Sprintf("maxLen=%d", cfg.MaxPiiStringLength), func(t *testing.T) {
+	maxLens := []int{5, 10, 20, 100}
+	for _, maxLen := range maxLens {
+		maxLen := maxLen
+		t.Run(fmt.Sprintf("maxLen=%d", maxLen), func(t *testing.T) {
 			t.Parallel()
-			masker := newTestMasker(t, cfg)
+			masker := newTestMasker(t, piimasker.WithMaxPiiStringLength(maxLen))
 
 			t.Run("string", func(t *testing.T) {
 				type input struct {
@@ -415,10 +395,10 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 	result := m.Mask(newPersonFixture()).(Person)
 
 	t.Run("top_level", func(t *testing.T) {
-		if !validateStringMask(result.FirstName, fixtureFirstName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.FirstName, fixtureFirstName, testMaxLen) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if !validateStringMask(result.LastName, fixtureLastName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.LastName, fixtureLastName, testMaxLen) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -431,29 +411,29 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if !validateStringMask(c.Email, fixtureEmail, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.Email, fixtureEmail, testMaxLen) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if !validateStringMask(c.Phone, fixturePhone, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.Phone, fixturePhone, testMaxLen) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if !validateStringMask(c.AltEmail, fixtureAltEmail, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, testMaxLen) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if !validateStringMask(a.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.Street, fixtureStreet, testMaxLen) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if !validateStringMask(a.City, fixtureCity, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.City, fixtureCity, testMaxLen) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if !validateStringMask(a.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.Country, fixtureCountry, testMaxLen) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if !validateStringMask(a.ZipCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, testMaxLen) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -476,55 +456,55 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testMaxLen) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if !validateStringMask(pm.CVV, fixtureCVV, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.CVV, fixtureCVV, testMaxLen) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if !validateStringMask(pm.Expiry, fixtureExpiry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, testMaxLen) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if !validateStringMask(pm.HolderName, fixtureHolderName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, testMaxLen) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if !validateStringMask(ba.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.Street, fixtureStreet, testMaxLen) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if !validateStringMask(ba.City, fixtureCity, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.City, fixtureCity, testMaxLen) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if !validateStringMask(ba.PostCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, testMaxLen) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if !validateStringMask(ba.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.Country, fixtureCountry, testMaxLen) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if !validateStringMask(o.OrderID, fixtureOrderID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.OrderID, fixtureOrderID, testMaxLen) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if !validateStringMask(o.Currency, fixtureCurrency, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.Currency, fixtureCurrency, testMaxLen) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if !validateStringMask(o.Notes, fixtureNotes, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.Notes, fixtureNotes, testMaxLen) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if !validateStringMask(item.ProductID, fixtureProductID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(item.ProductID, fixtureProductID, testMaxLen) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if !validateStringMask(item.Name, fixtureItemName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(item.Name, fixtureItemName, testMaxLen) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -537,16 +517,16 @@ func TestMask_Integration_MaskTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if !validateStringMask(d.DeviceID, fixtureDeviceID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, testMaxLen) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if !validateStringMask(d.UserAgent, fixtureUserAgent, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, testMaxLen) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if !validateStringMask(d.IPAddress, fixtureIPAddress, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, testMaxLen) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testMaxLen) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -700,10 +680,10 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	result := m.Mask(fixture).(PersonAnonymize)
 
 	t.Run("top_level", func(t *testing.T) {
-		if !validateAnonymization(result.FirstName, fixture.FirstName, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(result.FirstName, fixture.FirstName, testMaxLen) {
 			t.Errorf("FirstName: expected anonymized same-length string, got %q", result.FirstName)
 		}
-		if !validateAnonymization(result.LastName, fixture.LastName, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(result.LastName, fixture.LastName, testMaxLen) {
 			t.Errorf("LastName: expected anonymized same-length string, got %q", result.LastName)
 		}
 		if result.Age == 0 {
@@ -714,13 +694,13 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if !validateAnonymization(c.Email, fixture.Contact.Email, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(c.Email, fixture.Contact.Email, testMaxLen) {
 			t.Errorf("Email: expected anonymized same-length string, got %q", c.Email)
 		}
-		if !validateAnonymization(c.Phone, fixture.Contact.Phone, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(c.Phone, fixture.Contact.Phone, testMaxLen) {
 			t.Errorf("Phone: expected anonymized same-length string, got %q", c.Phone)
 		}
-		if !validateAnonymization(c.AltEmail, fixture.Contact.AltEmail, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(c.AltEmail, fixture.Contact.AltEmail, testMaxLen) {
 			t.Errorf("AltEmail: expected anonymized same-length string, got %q", c.AltEmail)
 		}
 	})
@@ -728,16 +708,16 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
 		fa := fixture.Contact.Address
-		if !validateAnonymization(a.Street, fa.Street, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(a.Street, fa.Street, testMaxLen) {
 			t.Errorf("Street: expected anonymized same-length string, got %q", a.Street)
 		}
-		if !validateAnonymization(a.City, fa.City, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(a.City, fa.City, testMaxLen) {
 			t.Errorf("City: expected anonymized same-length string, got %q", a.City)
 		}
-		if !validateAnonymization(a.Country, fa.Country, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(a.Country, fa.Country, testMaxLen) {
 			t.Errorf("Country: expected anonymized same-length string, got %q", a.Country)
 		}
-		if !validateAnonymization(a.ZipCode, fa.ZipCode, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(a.ZipCode, fa.ZipCode, testMaxLen) {
 			t.Errorf("ZipCode: expected anonymized same-length string, got %q", a.ZipCode)
 		}
 	})
@@ -761,31 +741,31 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
 		fpm := fixture.PaymentMethods[0]
-		if !validateAnonymization(pm.CardNumber, fpm.CardNumber, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(pm.CardNumber, fpm.CardNumber, testMaxLen) {
 			t.Errorf("CardNumber: expected anonymized same-length string, got %q", pm.CardNumber)
 		}
-		if !validateAnonymization(pm.CVV, fpm.CVV, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(pm.CVV, fpm.CVV, testMaxLen) {
 			t.Errorf("CVV: expected anonymized same-length string, got %q", pm.CVV)
 		}
-		if !validateAnonymization(pm.Expiry, fpm.Expiry, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(pm.Expiry, fpm.Expiry, testMaxLen) {
 			t.Errorf("Expiry: expected anonymized same-length string, got %q", pm.Expiry)
 		}
-		if !validateAnonymization(pm.HolderName, fpm.HolderName, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(pm.HolderName, fpm.HolderName, testMaxLen) {
 			t.Errorf("HolderName: expected anonymized same-length string, got %q", pm.HolderName)
 		}
 		// IsDefault is a bool — skipped; non-deterministic single-run assertion, covered by TestMask_AnonymizeTag/bool
 		ba := pm.BillingAddress
 		fba := fpm.BillingAddress
-		if !validateAnonymization(ba.Street, fba.Street, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(ba.Street, fba.Street, testMaxLen) {
 			t.Errorf("BillingAddress.Street: expected anonymized same-length string, got %q", ba.Street)
 		}
-		if !validateAnonymization(ba.City, fba.City, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(ba.City, fba.City, testMaxLen) {
 			t.Errorf("BillingAddress.City: expected anonymized same-length string, got %q", ba.City)
 		}
-		if !validateAnonymization(ba.PostCode, fba.PostCode, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(ba.PostCode, fba.PostCode, testMaxLen) {
 			t.Errorf("BillingAddress.PostCode: expected anonymized same-length string, got %q", ba.PostCode)
 		}
-		if !validateAnonymization(ba.Country, fba.Country, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(ba.Country, fba.Country, testMaxLen) {
 			t.Errorf("BillingAddress.Country: expected anonymized same-length string, got %q", ba.Country)
 		}
 	})
@@ -793,24 +773,24 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
 		fo := fixture.Orders[0]
-		if !validateAnonymization(o.OrderID, fo.OrderID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(o.OrderID, fo.OrderID, testMaxLen) {
 			t.Errorf("OrderID: expected anonymized same-length string, got %q", o.OrderID)
 		}
 		if o.Amount == 0 {
 			t.Errorf("Amount: expected anonymized non-zero, got 0")
 		}
-		if !validateAnonymization(o.Currency, fo.Currency, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(o.Currency, fo.Currency, testMaxLen) {
 			t.Errorf("Currency: expected anonymized same-length string, got %q", o.Currency)
 		}
-		if !validateAnonymization(o.Notes, fo.Notes, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(o.Notes, fo.Notes, testMaxLen) {
 			t.Errorf("Notes: expected anonymized same-length string, got %q", o.Notes)
 		}
 		item := o.Items[0]
 		fitem := fo.Items[0]
-		if !validateAnonymization(item.ProductID, fitem.ProductID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(item.ProductID, fitem.ProductID, testMaxLen) {
 			t.Errorf("ProductID: expected anonymized same-length string, got %q", item.ProductID)
 		}
-		if !validateAnonymization(item.Name, fitem.Name, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(item.Name, fitem.Name, testMaxLen) {
 			t.Errorf("Name: expected anonymized same-length string, got %q", item.Name)
 		}
 		if item.Quantity == 0 {
@@ -824,16 +804,16 @@ func TestMask_Integration_AnonymizeTag(t *testing.T) {
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
 		fd := fixture.Devices["mobile"]
-		if !validateAnonymization(d.DeviceID, fd.DeviceID, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(d.DeviceID, fd.DeviceID, testMaxLen) {
 			t.Errorf("DeviceID: expected anonymized same-length string, got %q", d.DeviceID)
 		}
-		if !validateAnonymization(d.UserAgent, fd.UserAgent, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(d.UserAgent, fd.UserAgent, testMaxLen) {
 			t.Errorf("UserAgent: expected anonymized same-length string, got %q", d.UserAgent)
 		}
-		if !validateAnonymization(d.IPAddress, fd.IPAddress, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(d.IPAddress, fd.IPAddress, testMaxLen) {
 			t.Errorf("IPAddress: expected anonymized same-length string, got %q", d.IPAddress)
 		}
-		if !validateAnonymization(d.ScreenSize, fd.ScreenSize, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(d.ScreenSize, fd.ScreenSize, testMaxLen) {
 			t.Errorf("ScreenSize: expected anonymized same-length string, got %q", d.ScreenSize)
 		}
 	})
@@ -844,10 +824,10 @@ func TestMask_Integration_NoTag(t *testing.T) {
 	result := m.Mask(newPersonNoTagFixture()).(PersonNoTag)
 
 	t.Run("top_level", func(t *testing.T) {
-		if !validateStringMask(result.FirstName, fixtureFirstName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.FirstName, fixtureFirstName, testMaxLen) {
 			t.Errorf("FirstName: expected masked, got %q", result.FirstName)
 		}
-		if !validateStringMask(result.LastName, fixtureLastName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.LastName, fixtureLastName, testMaxLen) {
 			t.Errorf("LastName: expected masked, got %q", result.LastName)
 		}
 		if result.Age != 0 {
@@ -860,29 +840,29 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("contact", func(t *testing.T) {
 		c := result.Contact
-		if !validateStringMask(c.Email, fixtureEmail, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.Email, fixtureEmail, testMaxLen) {
 			t.Errorf("Email: expected masked, got %q", c.Email)
 		}
-		if !validateStringMask(c.Phone, fixturePhone, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.Phone, fixturePhone, testMaxLen) {
 			t.Errorf("Phone: expected masked, got %q", c.Phone)
 		}
-		if !validateStringMask(c.AltEmail, fixtureAltEmail, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(c.AltEmail, fixtureAltEmail, testMaxLen) {
 			t.Errorf("AltEmail: expected masked, got %q", c.AltEmail)
 		}
 	})
 
 	t.Run("address", func(t *testing.T) {
 		a := result.Contact.Address
-		if !validateStringMask(a.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.Street, fixtureStreet, testMaxLen) {
 			t.Errorf("Street: expected masked, got %q", a.Street)
 		}
-		if !validateStringMask(a.City, fixtureCity, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.City, fixtureCity, testMaxLen) {
 			t.Errorf("City: expected masked, got %q", a.City)
 		}
-		if !validateStringMask(a.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.Country, fixtureCountry, testMaxLen) {
 			t.Errorf("Country: expected masked, got %q", a.Country)
 		}
-		if !validateStringMask(a.ZipCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(a.ZipCode, fixtureZipCode, testMaxLen) {
 			t.Errorf("ZipCode: expected masked, got %q", a.ZipCode)
 		}
 	})
@@ -905,55 +885,55 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("payment_method", func(t *testing.T) {
 		pm := result.PaymentMethods[0]
-		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.CardNumber, fixtureCardNumber, testMaxLen) {
 			t.Errorf("CardNumber: expected masked, got %q", pm.CardNumber)
 		}
-		if !validateStringMask(pm.CVV, fixtureCVV, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.CVV, fixtureCVV, testMaxLen) {
 			t.Errorf("CVV: expected masked, got %q", pm.CVV)
 		}
-		if !validateStringMask(pm.Expiry, fixtureExpiry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.Expiry, fixtureExpiry, testMaxLen) {
 			t.Errorf("Expiry: expected masked, got %q", pm.Expiry)
 		}
-		if !validateStringMask(pm.HolderName, fixtureHolderName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(pm.HolderName, fixtureHolderName, testMaxLen) {
 			t.Errorf("HolderName: expected masked, got %q", pm.HolderName)
 		}
 		if pm.IsDefault != false {
 			t.Errorf("IsDefault: expected masked to false, got %v", pm.IsDefault)
 		}
 		ba := pm.BillingAddress
-		if !validateStringMask(ba.Street, fixtureStreet, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.Street, fixtureStreet, testMaxLen) {
 			t.Errorf("BillingAddress.Street: expected masked, got %q", ba.Street)
 		}
-		if !validateStringMask(ba.City, fixtureCity, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.City, fixtureCity, testMaxLen) {
 			t.Errorf("BillingAddress.City: expected masked, got %q", ba.City)
 		}
-		if !validateStringMask(ba.PostCode, fixtureZipCode, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.PostCode, fixtureZipCode, testMaxLen) {
 			t.Errorf("BillingAddress.PostCode: expected masked, got %q", ba.PostCode)
 		}
-		if !validateStringMask(ba.Country, fixtureCountry, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(ba.Country, fixtureCountry, testMaxLen) {
 			t.Errorf("BillingAddress.Country: expected masked, got %q", ba.Country)
 		}
 	})
 
 	t.Run("order", func(t *testing.T) {
 		o := result.Orders[0]
-		if !validateStringMask(o.OrderID, fixtureOrderID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.OrderID, fixtureOrderID, testMaxLen) {
 			t.Errorf("OrderID: expected masked, got %q", o.OrderID)
 		}
 		if o.Amount != 0 {
 			t.Errorf("Amount: expected masked to 0, got %f", o.Amount)
 		}
-		if !validateStringMask(o.Currency, fixtureCurrency, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.Currency, fixtureCurrency, testMaxLen) {
 			t.Errorf("Currency: expected masked, got %q", o.Currency)
 		}
-		if !validateStringMask(o.Notes, fixtureNotes, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(o.Notes, fixtureNotes, testMaxLen) {
 			t.Errorf("Notes: expected masked, got %q", o.Notes)
 		}
 		item := o.Items[0]
-		if !validateStringMask(item.ProductID, fixtureProductID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(item.ProductID, fixtureProductID, testMaxLen) {
 			t.Errorf("ProductID: expected masked, got %q", item.ProductID)
 		}
-		if !validateStringMask(item.Name, fixtureItemName, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(item.Name, fixtureItemName, testMaxLen) {
 			t.Errorf("Name: expected masked, got %q", item.Name)
 		}
 		if item.Quantity != 0 {
@@ -966,16 +946,16 @@ func TestMask_Integration_NoTag(t *testing.T) {
 
 	t.Run("device", func(t *testing.T) {
 		d := result.Devices["mobile"]
-		if !validateStringMask(d.DeviceID, fixtureDeviceID, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.DeviceID, fixtureDeviceID, testMaxLen) {
 			t.Errorf("DeviceID: expected masked, got %q", d.DeviceID)
 		}
-		if !validateStringMask(d.UserAgent, fixtureUserAgent, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.UserAgent, fixtureUserAgent, testMaxLen) {
 			t.Errorf("UserAgent: expected masked, got %q", d.UserAgent)
 		}
-		if !validateStringMask(d.IPAddress, fixtureIPAddress, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.IPAddress, fixtureIPAddress, testMaxLen) {
 			t.Errorf("IPAddress: expected masked, got %q", d.IPAddress)
 		}
-		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(d.ScreenSize, fixtureScreenSize, testMaxLen) {
 			t.Errorf("ScreenSize: expected masked, got %q", d.ScreenSize)
 		}
 	})
@@ -987,7 +967,7 @@ func TestMask_PtrChain(t *testing.T) {
 	result := masker.Mask(fixture).(PtrMask)
 
 	t.Run("mask_level", func(t *testing.T) {
-		if !validateStringMask(*result.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(*result.Str, fixturePtrStr, testMaxLen) {
 			t.Errorf("Str: expected masked, got %q", *result.Str)
 		}
 		if *result.Int != 0 {
@@ -1003,17 +983,17 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *result.Bool)
 		}
 		for i, s := range result.Slice {
-			if !validateStringMask(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			if !validateStringMask(s, fixturePtrStr, testMaxLen) {
 				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := result.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := result.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*result.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := (*result.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := result.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := result.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
@@ -1053,7 +1033,7 @@ func TestMask_PtrChain(t *testing.T) {
 
 	t.Run("anonymize_level", func(t *testing.T) {
 		anon := result.Next.Next
-		if !validateAnonymization(*anon.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(*anon.Str, fixturePtrStr, testMaxLen) {
 			t.Errorf("Str: want different value of len %d, got %q", len(fixturePtrStr), *anon.Str)
 		}
 		if *anon.Int == fixturePtrInt {
@@ -1066,7 +1046,7 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Float: want anonymized value, got original %f", fixturePtrFloat)
 		}
 		for i, s := range anon.Slice {
-			if !validateAnonymization(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			if !validateAnonymization(s, fixturePtrStr, testMaxLen) {
 				t.Errorf("Slice[%d]: want anonymized string of len %d, got %q", i, len(fixturePtrStr), s)
 			}
 		}
@@ -1083,7 +1063,7 @@ func TestMask_PtrChain(t *testing.T) {
 
 	t.Run("notag_level", func(t *testing.T) {
 		notag := result.Next.Next.Next
-		if !validateStringMask(*notag.Str, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(*notag.Str, fixturePtrStr, testMaxLen) {
 			t.Errorf("Str: expected masked, got %q", *notag.Str)
 		}
 		if *notag.Int != 0 {
@@ -1099,17 +1079,17 @@ func TestMask_PtrChain(t *testing.T) {
 			t.Errorf("Bool: want false, got %v", *notag.Bool)
 		}
 		for i, s := range notag.Slice {
-			if !validateStringMask(s, fixturePtrStr, testConfig.MaxPiiStringLength) {
+			if !validateStringMask(s, fixturePtrStr, testMaxLen) {
 				t.Errorf("Slice[%d]: expected masked, got %q", i, s)
 			}
 		}
-		if v := notag.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := notag.MapVal["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("MapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := (*notag.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := (*notag.PMapVal)["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("PMapVal[key].Value: expected masked, got %q", v)
 		}
-		if v := notag.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testConfig.MaxPiiStringLength) {
+		if v := notag.MapPtr["key"].Value; !validateStringMask(v, fixturePtrStr, testMaxLen) {
 			t.Errorf("MapPtr[key].Value: expected masked, got %q", v)
 		}
 	})
@@ -1158,13 +1138,13 @@ func TestMask_NamedStringType(t *testing.T) {
 		input := namedTypeStruct{Status: StatusActive, Role: RoleAdmin, Name: "Alice"}
 		result := masker.Mask(input).(namedTypeStruct)
 
-		if !validateStringMask(string(result.Status), string(input.Status), testConfig.MaxPiiStringLength) {
+		if !validateStringMask(string(result.Status), string(input.Status), testMaxLen) {
 			t.Errorf("Status: expected masked, got %q", result.Status)
 		}
-		if !validateStringMask(string(result.Role), string(input.Role), testConfig.MaxPiiStringLength) {
+		if !validateStringMask(string(result.Role), string(input.Role), testMaxLen) {
 			t.Errorf("Role: expected masked, got %q", result.Role)
 		}
-		if !validateStringMask(result.Name, input.Name, testConfig.MaxPiiStringLength) {
+		if !validateStringMask(result.Name, input.Name, testMaxLen) {
 			t.Errorf("Name: expected masked, got %q", result.Name)
 		}
 	})
@@ -1177,10 +1157,10 @@ func TestMask_NamedStringType(t *testing.T) {
 		v := input{Status: StatusActive, Role: RoleAdmin}
 		result := masker.Mask(v).(input)
 
-		if !validateStringMask(string(result.Status), string(v.Status), testConfig.MaxPiiStringLength) {
+		if !validateStringMask(string(result.Status), string(v.Status), testMaxLen) {
 			t.Errorf("Status: expected masked (no tag), got %q", result.Status)
 		}
-		if !validateStringMask(string(result.Role), string(v.Role), testConfig.MaxPiiStringLength) {
+		if !validateStringMask(string(result.Role), string(v.Role), testMaxLen) {
 			t.Errorf("Role: expected masked (no tag), got %q", result.Role)
 		}
 	})
@@ -1204,13 +1184,13 @@ func TestMask_NamedStringType(t *testing.T) {
 		input := namedTypeStructAnonymize{Status: StatusActive, Role: RoleAdmin, Name: "Charlie"}
 		result := masker.Mask(input).(namedTypeStructAnonymize)
 
-		if !validateAnonymization(string(result.Status), string(input.Status), testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(string(result.Status), string(input.Status), testMaxLen) {
 			t.Errorf("Status: expected anonymized (different, same length), got %q", result.Status)
 		}
-		if !validateAnonymization(string(result.Role), string(input.Role), testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(string(result.Role), string(input.Role), testMaxLen) {
 			t.Errorf("Role: expected anonymized (different, same length), got %q", result.Role)
 		}
-		if !validateAnonymization(result.Name, input.Name, testConfig.MaxPiiStringLength) {
+		if !validateAnonymization(result.Name, input.Name, testMaxLen) {
 			t.Errorf("Name: expected anonymized (different, same length), got %q", result.Name)
 		}
 	})

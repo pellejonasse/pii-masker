@@ -7,35 +7,35 @@ import (
 )
 
 const (
-	piiTagField = "Pii" // PiiMasking field tag, e.g. `Pii:"mask"` or `Pii:"anonymize"` not setting it will result in masking
+	defaultMaxPiiStringLength = 100
+	defaultPiiTagField        = "Pii" // PiiMasking field tag, e.g. `Pii:"mask"` or `Pii:"anonymize"` not setting it will result in masking
 )
 
 type PiiMasker interface {
-	Mask(obj any, opts ...MaskerConfig) any
+	Mask(obj any) any
 }
 
 // Don't necessarily need a struct and it might be more convenient if it isn't a struct, since now I have to worry about global state
 type piiMasker struct {
-	config    MaskerConfig
+	config    maskerConfig
 	typeCache sync.Map // map[reflect.Type][]piiMode, populated on first encounter of each struct type
 }
 
-func NewMasker(config MaskerConfig) PiiMasker {
-	if config.MaxPiiStringLength == 0 {
-		config.MaxPiiStringLength = 100
+func NewMasker() PiiMasker {
+	return &piiMasker{config: maskerConfig{MaxPiiStringLength: defaultMaxPiiStringLength, TagField: defaultPiiTagField}}
+}
+
+func NewMaskerWithOptions(opts ...Option) PiiMasker {
+	config := maskerConfig{MaxPiiStringLength: defaultMaxPiiStringLength, TagField: defaultPiiTagField}
+	for _, opt := range opts {
+		opt(&config)
 	}
 	return &piiMasker{config: config}
 }
 
 // generates a copy of an input object with all PII fields masked. The input can be a struct, map, slice, array, or any other type. The function uses reflection to traverse the input and apply masking to any fields that are tagged with `pii:"true"`. For strings, it replaces the content with a fixed mask (e.g., "****") while preserving the length of the original string up to a maximum defined length. For other types, it applies a generic mask (e.g., zero value for numbers, false for booleans). The function handles nested structures and collections recursively.
-func (m *piiMasker) Mask(obj any, opts ...MaskerConfig) any {
+func (m *piiMasker) Mask(obj any) any {
 	config := m.config
-	if len(opts) > 0 {
-		config = opts[0]
-		if config.MaxPiiStringLength == 0 {
-			config.MaxPiiStringLength = m.config.MaxPiiStringLength
-		}
-	}
 	originalObject := reflect.ValueOf(obj)
 	copy := reflect.New(originalObject.Type()).Elem()
 	m.recursiveStructTraverserWithConfig(copy, originalObject, piiModeNone, config)
@@ -44,7 +44,7 @@ func (m *piiMasker) Mask(obj any, opts ...MaskerConfig) any {
 
 // recursiveStructTraverser is a helper function that performs the actual traversal and masking of the struct fields. It takes three parameters: copy, which is the value being constructed as a copy of the original; original, which is the value being traversed; and piiValue, a boolean indicating whether the current field is tagged as PII. The function checks the type of each field and applies masking accordingly. For strings, it replaces the content with a fixed mask while preserving the length up to a maximum defined length. For other types, it applies a generic mask. The function handles nested structures and collections recursively, ensuring that all PII fields are masked throughout the entire object hierarchy.
 // NOTE: Should I add support for time.Time and raw json strings?
-func (m *piiMasker) recursiveStructTraverserWithConfig(copy, original reflect.Value, piiMode piiMode, config MaskerConfig) {
+func (m *piiMasker) recursiveStructTraverserWithConfig(copy, original reflect.Value, piiMode piiMode, config maskerConfig) {
 	if original.CanInterface() {
 		switch k := original.Kind(); {
 		case k == reflect.String:
@@ -126,13 +126,13 @@ func (m *piiMasker) structFieldTags(t reflect.Type) []piiMode {
 	}
 	tags := make([]piiMode, t.NumField())
 	for i := range t.NumField() {
-		tags[i] = determinePiiMode(t.Field(i).Tag.Get(piiTagField))
+		tags[i] = determinePiiMode(t.Field(i).Tag.Get(m.config.TagField))
 	}
 	actual, _ := m.typeCache.LoadOrStore(t, tags)
 	return actual.([]piiMode)
 }
 
-func maskString(s string, config MaskerConfig) string {
+func maskString(s string, config maskerConfig) string {
 	length := min(len(s), config.MaxPiiStringLength)
 	maskedString := make([]byte, length)
 	for i := range maskedString {
@@ -141,7 +141,7 @@ func maskString(s string, config MaskerConfig) string {
 	return string(maskedString)
 }
 
-func applyStringPiiMode(copy, original reflect.Value, piiMode piiMode, config MaskerConfig) {
+func applyStringPiiMode(copy, original reflect.Value, piiMode piiMode, config maskerConfig) {
 	s := original.String()
 	switch piiMode {
 	case piiModeShow:

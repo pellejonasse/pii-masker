@@ -24,7 +24,7 @@ type cacheStructC struct {
 }
 
 func TestTypeCache_Contents(t *testing.T) {
-	m := NewMasker(MaskerConfig{}).(*piiMasker)
+	m := NewMasker().(*piiMasker)
 
 	m.Mask(cacheStructA{Name: "Alice", Email: "alice@example.com", Age: 30})
 	m.Mask(cacheStructB{Token: "tok", Balance: 100.0, Active: true})
